@@ -1,8 +1,25 @@
 import "./App.css";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { el } from "@elemaudio/core";
 import type { NodeRepr_t } from "@elemaudio/core";
 import WebRenderer from "@elemaudio/web-renderer";
+
+const audioContext = new AudioContext({
+  latencyHint: "interactive",
+  sampleRate: 44100,
+});
+
+const core = new WebRenderer();
+
+(async function main() {
+  let node = await core.initialize(audioContext, {
+    numberOfInputs: 0,
+    numberOfOutputs: 1,
+    outputChannelCount: [2],
+  });
+
+  node.connect(audioContext.destination);
+})();
 
 function App() {
   const [playing, setPlaying] = useState(false);
@@ -12,17 +29,6 @@ function App() {
   const [startFreq, setStartFreq] = useState<number>(0.01);
   const [modAmpMult, setModAmpMult] = useState<number>(2);
   const [ampLimit, setAmpLimit] = useState<number>(1);
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  useEffect(() => {
-    const audioContext = new AudioContext({
-      latencyHint: "interactive",
-      sampleRate: 44100,
-    });
-
-    audioContextRef.current = audioContext;
-    audioContext.suspend();
-  }, []);
 
   const recursiveFM = useCallback(
     (t: NodeRepr_t, amp: number, counter: number): NodeRepr_t => {
@@ -34,8 +40,6 @@ function App() {
   );
 
   const playSynth = useCallback(() => {
-    const core = new WebRenderer();
-
     const synth = recursiveFM(
       el.cycle(el.mul(el.cycle(startFreq), startAmp)),
       modAmp,
@@ -45,30 +49,16 @@ function App() {
     core.on("load", function () {
       core.render(synth, synth);
     });
-
-    (async function main() {
-      if (audioContextRef.current) {
-        let node = await core.initialize(audioContextRef?.current, {
-          numberOfInputs: 0,
-          numberOfOutputs: 1,
-          outputChannelCount: [2],
-        });
-
-        node.connect(audioContextRef.current.destination);
-      }
-    })();
   }, [modAmp, steps, startAmp, startFreq, recursiveFM]);
 
   const togglePlay = () => {
-    if (audioContextRef?.current) {
-      if (playing) {
-        audioContextRef.current.suspend();
-      } else {
-        audioContextRef.current.resume();
-      }
-      setPlaying((play) => !play);
+    if (playing) {
+      audioContext.suspend();
+    } else {
+      audioContext.resume();
       playSynth();
     }
+    setPlaying((play) => !play);
   };
 
   useEffect(() => {
