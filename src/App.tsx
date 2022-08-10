@@ -26,7 +26,6 @@ function App() {
 
   const recursiveFM = useCallback(
     (t: NodeRepr_t, amp: number, counter: number): NodeRepr_t => {
-      console.log("recursive counter is ", counter);
       return counter > 0 && amp > ampLimit
         ? recursiveFM(el.cycle(el.mul(t, amp)), amp / modAmpMult, counter - 1)
         : t;
@@ -35,17 +34,16 @@ function App() {
   );
 
   const playSynth = useCallback(() => {
-    console.log("playing synth");
     const core = new WebRenderer();
 
+    const synth = recursiveFM(
+      el.cycle(el.mul(el.cycle(startFreq), startAmp)),
+      modAmp,
+      steps
+    );
+
     core.on("load", function () {
-      core.render(
-        recursiveFM(
-          el.cycle(el.mul(el.cycle(startFreq), startAmp)),
-          modAmp,
-          steps
-        )
-      );
+      core.render(synth, synth);
     });
 
     (async function main() {
