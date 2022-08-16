@@ -31,17 +31,16 @@ function App() {
   const [ampLimit, setAmpLimit] = useState<number>(1);
   const [masterVolume, setMasterVolume] = useState<number>(0);
 
-  const playSynth = useCallback(() => {
-    const recursiveFM = (
-      t: NodeRepr_t,
-      amp: number,
-      counter: number
-    ): NodeRepr_t => {
+  const recursiveFM = useCallback(
+    (t: NodeRepr_t, amp: number, counter: number): NodeRepr_t => {
       return counter > 0 && amp > ampLimit
         ? recursiveFM(el.cycle(el.mul(t, amp)), amp / modAmpMult, counter - 1)
         : t;
-    };
+    },
+    [ampLimit, modAmpMult]
+  );
 
+  const playSynth = useCallback(() => {
     const synth = recursiveFM(
       el.cycle(el.mul(el.cycle(startFreq), startAmp)),
       modAmp,
@@ -52,7 +51,7 @@ function App() {
       el.mul(synth, masterVolume / 100),
       el.mul(synth, masterVolume / 100)
     );
-  }, [modAmp, steps, startAmp, startFreq, ampLimit, modAmpMult, masterVolume]);
+  }, [modAmp, steps, startAmp, startFreq, recursiveFM, masterVolume]);
 
   const togglePlay = () => {
     if (playing) {
@@ -66,7 +65,7 @@ function App() {
 
   useEffect(() => {
     playSynth();
-  }, [modAmp, steps, startAmp, startFreq, playSynth]);
+  }, [playSynth]);
 
   return (
     <div className="App">
