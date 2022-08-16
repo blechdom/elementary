@@ -29,6 +29,7 @@ function App() {
   const [startFreq, setStartFreq] = useState<number>(0.01);
   const [modAmpMult, setModAmpMult] = useState<number>(2);
   const [ampLimit, setAmpLimit] = useState<number>(1);
+  const [masterVolume, setMasterVolume] = useState<number>(0);
 
   const recursiveFM = useCallback(
     (t: NodeRepr_t, amp: number, counter: number): NodeRepr_t => {
@@ -46,10 +47,11 @@ function App() {
       steps
     );
 
-    core.on("load", function () {
-      core.render(synth, synth);
-    });
-  }, [modAmp, steps, startAmp, startFreq, recursiveFM]);
+    core.render(
+      el.mul(synth, masterVolume / 100),
+      el.mul(synth, masterVolume / 100)
+    );
+  }, [modAmp, steps, startAmp, startFreq, recursiveFM, masterVolume]);
 
   const togglePlay = () => {
     if (playing) {
@@ -103,7 +105,7 @@ function App() {
         value={startFreq}
         step={0.01}
         min={0}
-        max={4}
+        max={12}
         onChange={(event) => setStartFreq(parseFloat(event.target.value))}
       />{" "}
       {startFreq}
@@ -111,9 +113,9 @@ function App() {
       <input
         type={"range"}
         value={modAmpMult}
-        min={0}
+        min={0.01}
         step={0.01}
-        max={8}
+        max={12}
         onChange={(event) => setModAmpMult(parseFloat(event.target.value))}
       />{" "}
       {modAmpMult}
@@ -123,10 +125,20 @@ function App() {
         value={ampLimit}
         min={0}
         step={0.01}
-        max={8}
+        max={12}
         onChange={(event) => setAmpLimit(parseFloat(event.target.value))}
       />{" "}
       {ampLimit}
+      <h2>master volume</h2>
+      <input
+        type={"range"}
+        value={masterVolume}
+        min={0}
+        step={0.1}
+        max={100}
+        onChange={(event) => setMasterVolume(parseFloat(event.target.value))}
+      />{" "}
+      {masterVolume}
     </div>
   );
 }
