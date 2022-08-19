@@ -47,10 +47,12 @@ function App() {
       steps
     );
 
+    // core.on("load", function () {
     core.render(
       el.mul(synth, masterVolume / 100),
       el.mul(synth, masterVolume / 100)
     );
+    // });
   }, [modAmp, steps, startAmp, startFreq, recursiveFM, masterVolume]);
 
   const togglePlay = () => {
