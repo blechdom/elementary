@@ -12,6 +12,7 @@ const audioContext = new AudioContext({
 const core = new WebRenderer();
 
 (async function main() {
+  //core.on("load", async function () {
   let node = await core.initialize(audioContext, {
     numberOfInputs: 0,
     numberOfOutputs: 1,
@@ -19,6 +20,7 @@ const core = new WebRenderer();
   });
 
   node.connect(audioContext.destination);
+  //  });
 })();
 
 function App() {
@@ -34,7 +36,13 @@ function App() {
   const recursiveFM = useCallback(
     (t: NodeRepr_t, amp: number, counter: number): NodeRepr_t => {
       return counter > 0 && amp > ampLimit
-        ? recursiveFM(el.cycle(el.mul(t, amp)), amp / modAmpMult, counter - 1)
+        ? recursiveFM(
+            el.cycle(
+              el.mul(t, el.const({ key: `amp-${counter}`, value: amp }))
+            ),
+            amp / modAmpMult,
+            counter - 1
+          )
         : t;
     },
     [ampLimit, modAmpMult]
@@ -42,17 +50,22 @@ function App() {
 
   const playSynth = useCallback(() => {
     const synth = recursiveFM(
-      el.cycle(el.mul(el.cycle(startFreq), startAmp)),
+      el.cycle(
+        el.mul(
+          el.cycle(el.const({ key: `start-freq`, value: startFreq })),
+          el.const({ key: `start-amp`, value: startAmp })
+        )
+      ),
       modAmp,
       steps
     );
 
-    // core.on("load", function () {
+    //core.on("load", function () {
     core.render(
-      el.mul(synth, masterVolume / 100),
-      el.mul(synth, masterVolume / 100)
+      el.mul(synth, el.const({ key: `master-amp`, value: masterVolume / 100 })),
+      el.mul(synth, el.const({ key: `master-amp`, value: masterVolume / 100 }))
     );
-    // });
+    //});
   }, [modAmp, steps, startAmp, startFreq, recursiveFM, masterVolume]);
 
   const togglePlay = () => {
