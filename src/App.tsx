@@ -1,29 +1,16 @@
+import WebRenderer from "@elemaudio/web-renderer";
 import "./App.css";
 import { useState, useCallback, useEffect } from "react";
 import { el } from "@elemaudio/core";
 import type { NodeRepr_t } from "@elemaudio/core";
-import WebRenderer from "@elemaudio/web-renderer";
+require("events").EventEmitter.defaultMaxListeners = 0;
 
-const audioContext = new AudioContext({
-  latencyHint: "interactive",
-  sampleRate: 44100,
-});
+type AppProps = {
+  audioContext: AudioContext;
+  core: WebRenderer;
+};
 
-const core = new WebRenderer();
-
-(async function main() {
-  //core.on("load", async function () {
-  let node = await core.initialize(audioContext, {
-    numberOfInputs: 0,
-    numberOfOutputs: 1,
-    outputChannelCount: [2],
-  });
-
-  node.connect(audioContext.destination);
-  //  });
-})();
-
-function App() {
+const App: React.FC<AppProps> = ({ audioContext, core }) => {
   const [playing, setPlaying] = useState(false);
   const [steps, setSteps] = useState<number>(4);
   const [modAmp, setModAmp] = useState<number>(10000);
@@ -60,13 +47,11 @@ function App() {
       steps
     );
 
-    //core.on("load", function () {
     core.render(
       el.mul(synth, el.const({ key: `master-amp`, value: masterVolume / 100 })),
       el.mul(synth, el.const({ key: `master-amp`, value: masterVolume / 100 }))
     );
-    //});
-  }, [modAmp, steps, startAmp, startFreq, recursiveFM, masterVolume]);
+  }, [modAmp, steps, startAmp, startFreq, recursiveFM, masterVolume, core]);
 
   const togglePlay = () => {
     if (playing) {
@@ -88,11 +73,23 @@ function App() {
       <button onClick={togglePlay}>
         <span>{playing ? "Pause" : "Play"}</span>
       </button>
-      <h2>steps</h2>
+      <h2>master volume</h2>
+      <input
+        type={"range"}
+        value={masterVolume}
+        min={0}
+        step={0.1}
+        max={100}
+        onChange={(event) => setMasterVolume(parseFloat(event.target.value))}
+      />{" "}
+      {masterVolume}
+      <h2>number of recursions</h2>
       <input
         width="1000px"
         type={"range"}
         value={steps}
+        min={0}
+        max={10}
         onChange={(event) => setSteps(parseFloat(event.target.value))}
       />{" "}
       {steps}
@@ -120,7 +117,7 @@ function App() {
         value={startFreq}
         step={0.01}
         min={0}
-        max={12}
+        max={40}
         onChange={(event) => setStartFreq(parseFloat(event.target.value))}
       />{" "}
       {startFreq}
@@ -130,7 +127,7 @@ function App() {
         value={modAmpMult}
         min={0.01}
         step={0.01}
-        max={12}
+        max={8}
         onChange={(event) => setModAmpMult(parseFloat(event.target.value))}
       />{" "}
       {modAmpMult}
@@ -144,18 +141,8 @@ function App() {
         onChange={(event) => setAmpLimit(parseFloat(event.target.value))}
       />{" "}
       {ampLimit}
-      <h2>master volume</h2>
-      <input
-        type={"range"}
-        value={masterVolume}
-        min={0}
-        step={0.1}
-        max={100}
-        onChange={(event) => setMasterVolume(parseFloat(event.target.value))}
-      />{" "}
-      {masterVolume}
     </div>
   );
-}
+};
 
 export default App;
