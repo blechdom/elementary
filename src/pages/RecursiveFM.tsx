@@ -7,13 +7,6 @@ import Slider from "../components/Slider";
 import Page from "../components/Page";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
-const presets = [
-  [3, 7307, 19280, 3.32, 3.68],
-  [2, 1650, 925, 0.06, 0.18],
-  [5, 4236, 4164, 0.09, 1.63],
-  [3, 7342, 1131, 7, 0.68],
-];
-
 type RecursiveFMProps = {
   audioContext: AudioContext;
   core: WebRenderer;
@@ -27,6 +20,13 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
   const [startFreq, setStartFreq] = useState<number>(3.32);
   const [modAmpMult, setModAmpMult] = useState<number>(3.68);
   const [masterVolume, setMasterVolume] = useState<number>(0);
+
+  const [presets, setPresets] = useState([
+    [3, 7307, 19280, 3.32, 3.68],
+    [2, 1650, 925, 0.06, 0.18],
+    [5, 4236, 4164, 0.09, 1.63],
+    [3, 7342, 1131, 7, 0.68],
+  ]);
 
   const recursiveFM = useCallback(
     (t: NodeRepr_t, amp: number, counter: number): NodeRepr_t => {
@@ -83,18 +83,30 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
     setModAmpMult(presets[i][4]);
   }
 
+  function addNewPreset() {
+    setPresets((presets) => [
+      ...presets,
+      [steps, modAmp, startAmp, startFreq, modAmpMult],
+    ]);
+  }
+
   return (
     <Page>
       <h1>Recursive FM Synthesis</h1>
       <PlayButton onClick={togglePlay}>
         <h2> {playing ? " Pause " : " Play "} </h2>
       </PlayButton>
-      <div>
+      <Presets>
         {presets.map((preset, i) => (
           <Button key={`preset-${i}`} onClick={() => loadPreset(i)}>
             Preset {i + 1}
           </Button>
         ))}
+      </Presets>
+      <div>
+        <Button key={`plus`} onClick={addNewPreset}>
+          + Add Preset
+        </Button>
       </div>
       <h2>
         master volume = <SliderLabel>{masterVolume}</SliderLabel>
@@ -193,6 +205,10 @@ const SliderLabel = styled.span`
   display: inline-block;
   width: 150px;
   text-align: left;
+`;
+
+const Presets = styled.div`
+  margin-right: 25px;
 `;
 
 export default RecursiveFM;
