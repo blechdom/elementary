@@ -4,6 +4,7 @@ import { el } from "@elemaudio/core";
 import type { NodeRepr_t } from "@elemaudio/core";
 import styled from "styled-components";
 import Slider from "../components/Slider";
+import Page from "../components/Page";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
 const presets = [
@@ -85,9 +86,6 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
   return (
     <Page>
       <h1>Recursive FM Synthesis</h1>
-      <h5>
-        Code: <a href="https://github.com/blechdom/elementary">Github</a>
-      </h5>
       <PlayButton onClick={togglePlay}>
         <h2> {playing ? " Pause " : " Play "} </h2>
       </PlayButton>
@@ -167,11 +165,6 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
   );
 };
 
-const Page = styled.div`
-  width: 100%;
-  align: center;
-  margin: 4em;
-`;
 const Button = styled.button`
   background-color: #0f9ff5;
   color: #ffffff;

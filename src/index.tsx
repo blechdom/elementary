@@ -1,4 +1,5 @@
 import React from "react";
+import { HashRouter } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -21,7 +22,9 @@ core.on("load", () => {
 
   root.render(
     <React.StrictMode>
-      <App audioContext={audioContext} core={core} />
+      <HashRouter>
+        <App audioContext={audioContext} core={core} />
+      </HashRouter>
     </React.StrictMode>
   );
 });
