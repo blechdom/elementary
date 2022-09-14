@@ -56,8 +56,14 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
     );
 
     core.render(
-      el.mul(synth, el.const({ key: `master-amp`, value: masterVolume / 100 })),
-      el.mul(synth, el.const({ key: `master-amp`, value: masterVolume / 100 }))
+      el.mul(
+        synth,
+        el.const({ key: `master-amp-left`, value: masterVolume / 100 })
+      ),
+      el.mul(
+        synth,
+        el.const({ key: `master-amp-right`, value: masterVolume / 100 })
+      )
     );
   }, [modAmp, steps, startAmp, startFreq, recursiveFM, masterVolume, core]);
 

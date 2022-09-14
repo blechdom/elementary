@@ -3,6 +3,7 @@ import styled from "styled-components";
 import WebRenderer from "@elemaudio/web-renderer";
 import About from "./pages/About";
 import RecursiveFM from "./pages/RecursiveFM";
+import Spirals from "./pages/Spirals";
 
 type AppProps = {
   audioContext: AudioContext;
@@ -15,10 +16,13 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
       <Nav>
         <ul id="navigation">
           <li>
-            <Title>Elementary Audio Experiments</Title>
+            <Title>Experiments using Elementary Audio</Title>
           </li>
           <li>
-            <Link to="/">RecursiveFM</Link>
+            <Link to="/">Recursive FM</Link>
+          </li>
+          <li>
+            <Link to="/spirals">Pythagorean Spirals</Link>
           </li>
           <li>
             <Link to="/about">About</Link>
@@ -30,6 +34,10 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
         <Route
           path="/"
           element={<RecursiveFM audioContext={audioContext} core={core} />}
+        />
+        <Route
+          path="/spirals"
+          element={<Spirals audioContext={audioContext} core={core} />}
         />
         <Route path="/about" element={<About />} />
       </Routes>

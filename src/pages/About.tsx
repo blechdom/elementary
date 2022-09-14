@@ -10,6 +10,14 @@ const About: React.FC = () => {
           Code: <a href="https://github.com/blechdom/elementary">Github</a>
         </h5>
         <p>Welcome to my site. More info coming soon.</p>
+        <ul>
+          <li>
+            <a href="./">Recursive FM</a>
+          </li>
+          <li>
+            <a href="./spirals">Pythagorean Spirals</a>
+          </li>
+        </ul>
       </main>
     </Page>
   );
