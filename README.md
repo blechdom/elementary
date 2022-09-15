@@ -9,11 +9,11 @@
 1. in the same directory, start the app: `npm start`
 1. Check out `http://localhost:3000` in your browser
 
-## What's included
+## What's included, so far...
 
 ### Recursive FM
 
-    FM synthesis where the the signal frequency is modulated by itself.
+FM synthesis where the the signal frequency is modulated by itself.
 
 #### Parameters
 
@@ -27,7 +27,7 @@
 
 ### Pythagorean Spiral
 
-    Playing with the Pythagorean Comma... Multiply a frequency by a value (1.5 = Perfect 5th). If the frequency goes above a threshold, divide it by 2 (a octave) to keep the frequencies in audible range. Hear the sequences spiral around the comma...
+Playing with the Pythagorean Comma... Multiply a frequency by a value (1.5 = Perfect 5th). If the frequency goes above a threshold, divide it by 2 (a octave) to keep the frequencies in audible range. Hear the sequences spiral around the comma...
 
 #### Parameters
 
@@ -37,4 +37,4 @@
 - Speed (ms): how fast do you want to hear it go?
 - Upper Limit: Threshold to start dividing by a value (octave = 2.0)
 - Lower Limit: If you want the pattern to cover a larger range, lower this value
-- Interval Divisor: maybe you want to divide by a number other than 2?
+- Interval Divisor: maybe you want to divide by a number other than 2? The value exists, so might as well tweak it.
