@@ -141,11 +141,7 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   }
 
   return (
-    <Page>
-      <h1>Pythagorean Spirals</h1>
-      <PlayButton onClick={togglePlay}>
-        <h2> {playing ? " Pause " : " Play "} </h2>
-      </PlayButton>
+    <>
       <Presets>
         {presets.map((preset, i) => (
           <Button key={`preset-${i}`} onClick={() => loadPreset(i)}>
@@ -158,81 +154,7 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
           + Add Preset
         </Button>
       </div>
-      <h3>Frequency: {frequency.toFixed(3)}</h3>
-      <h2>
-        master volume = <SliderLabel>{masterVolume}</SliderLabel>
-      </h2>
-      <Slider
-        type={"range"}
-        value={masterVolume}
-        min={0}
-        step={0.1}
-        max={100}
-        onChange={(event) => setMasterVolume(parseFloat(event.target.value))}
-      />
-      <h2>
-        starting frequency ={" "}
-        <SliderLabel>{scaledStartingFrequency.toFixed(3)}</SliderLabel>
-      </h2>
-      <Slider
-        type={"range"}
-        value={startingFrequency}
-        min={5}
-        step={0.01}
-        max={30}
-        onChange={(event) =>
-          setStartingFrequency(parseFloat(event.target.value))
-        }
-      />
-      <h2>
-        speed (ms) = <SliderLabel>{scaledSpeedInMs.toFixed(3)}</SliderLabel>
-      </h2>
-      <Slider
-        type={"range"}
-        value={speedInMs}
-        min={0}
-        step={0.01}
-        max={20}
-        onChange={(event) => setSpeedInMs(parseFloat(event.target.value))}
-      />
-      <h2>
-        upper limit (hz) ={" "}
-        <SliderLabel>{scaledUpperLimit.toFixed(3)}</SliderLabel>
-      </h2>
-      <Slider
-        type={"range"}
-        value={upperLimit}
-        min={5}
-        step={0.01}
-        max={30}
-        onChange={(event) => setUpperLimit(parseFloat(event.target.value))}
-      />
-      <h2>
-        lower limit = <SliderLabel>{scaledLowerLimit.toFixed(3)}</SliderLabel>
-      </h2>
-      <Slider
-        type={"range"}
-        value={lowerLimit}
-        min={3}
-        step={0.01}
-        max={upperLimit}
-        onChange={(event) => setLowerLimit(parseFloat(event.target.value))}
-      />
-      <h2>
-        interval multiplier ={" "}
-        <SliderLabel>{scaledIntervalMultiplier.toFixed(3)}</SliderLabel>
-      </h2>
-      <Slider
-        type={"range"}
-        value={intervalMultiplier}
-        min={0}
-        step={0.01}
-        max={17}
-        onChange={(event) =>
-          setIntervalMultiplier(parseFloat(event.target.value))
-        }
-      />
-    </Page>
+    </>
   );
 };
 
@@ -246,24 +168,6 @@ const Button = styled.button`
     background-color: #ffab00;
     color: #000000;
   }
-`;
-
-const PlayButton = styled.button`
-  background-color: #09ab45;
-  color: #ffffff;
-  border: none;
-  width: 160px;
-  margin: 0 2em 2em 0;
-  :hover {
-    background-color: #ff55ff;
-    color: #000000;
-  }
-`;
-
-const SliderLabel = styled.span`
-  display: inline-block;
-  width: 150px;
-  text-align: left;
 `;
 
 const Presets = styled.div`
