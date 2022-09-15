@@ -70,10 +70,10 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   }, [intervalMultiplier, scaledIntervalMultiplier]);
 
   useEffect(() => {
-    if (lowerLimit > upperLimit) {
+    if (scaledLowerLimit > scaledUpperLimit) {
       setLowerLimit(upperLimit);
     }
-  }, [upperLimit, lowerLimit]);
+  }, [upperLimit, scaledLowerLimit, scaledUpperLimit]);
 
   core.on("metro", function (e) {
     let nextFreq = frequency * scaledIntervalMultiplier;
@@ -171,7 +171,7 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
         onChange={(event) => setMasterVolume(parseFloat(event.target.value))}
       />
       <h2>
-        starting frequency ={" "}
+        starting frequency (hz) ={" "}
         <SliderLabel>{scaledStartingFrequency.toFixed(3)}</SliderLabel>
       </h2>
       <Slider
@@ -208,7 +208,8 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
         onChange={(event) => setUpperLimit(parseFloat(event.target.value))}
       />
       <h2>
-        lower limit = <SliderLabel>{scaledLowerLimit.toFixed(3)}</SliderLabel>
+        lower limit (hz) ={" "}
+        <SliderLabel>{(scaledLowerLimit / 2).toFixed(3)}</SliderLabel>
       </h2>
       <Slider
         type={"range"}
@@ -219,7 +220,7 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
         onChange={(event) => setLowerLimit(parseFloat(event.target.value))}
       />
       <h2>
-        interval multiplier ={" "}
+        interval multiplier (2.0 = octave) ={" "}
         <SliderLabel>{scaledIntervalMultiplier.toFixed(3)}</SliderLabel>
       </h2>
       <Slider
