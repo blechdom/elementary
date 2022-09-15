@@ -18,7 +18,7 @@ type SpiralsProps = {
 
 const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   const [playing, setPlaying] = useState(false);
-  const [masterVolume, setMasterVolume] = useState<number>(0);
+  const [mainVolume, setMainVolume] = useState<number>(0);
   const [startingFrequency, setStartingFrequency] = useState<number>(15);
   const [scaledStartingFrequency, setScaledStartingFrequency] =
     useState<number>(0);
@@ -29,9 +29,8 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   const [scaledUpperLimit, setScaledUpperLimit] = useState<number>(0);
   const [lowerLimit, setLowerLimit] = useState<number>(20);
   const [scaledLowerLimit, setScaledLowerLimit] = useState<number>(0);
-  const [intervalMultiplier, setIntervalMultiplier] = useState<number>(0.25);
-  const [scaledIntervalMultiplier, setScaledIntervalMultiplier] =
-    useState<number>(0);
+  const [intervalDivisor, setIntervalDivisor] = useState<number>(0.25);
+  const [scaledIntervalDivisor, setScaledIntervalDivisor] = useState<number>(0);
 
   const [presets, setPresets] = useState([
     [16.49, 10, 20, 20, 1.76],
@@ -65,9 +64,9 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   }, [speedInMs, scaledSpeedInMs]);
 
   useEffect(() => {
-    const scaledFreq = exponentialScale(intervalMultiplier);
-    setScaledIntervalMultiplier(scaledFreq / 10);
-  }, [intervalMultiplier, scaledIntervalMultiplier]);
+    const scaledFreq = exponentialScale(intervalDivisor);
+    setScaledIntervalDivisor(scaledFreq / 10);
+  }, [intervalDivisor, scaledIntervalDivisor]);
 
   useEffect(() => {
     if (scaledLowerLimit > scaledUpperLimit) {
@@ -76,7 +75,7 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   }, [upperLimit, scaledLowerLimit, scaledUpperLimit]);
 
   core.on("metro", function (e) {
-    let nextFreq = frequency * scaledIntervalMultiplier;
+    let nextFreq = frequency * scaledIntervalDivisor;
     if (nextFreq > scaledUpperLimit) {
       do {
         nextFreq = nextFreq / 2;
@@ -90,20 +89,20 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
     let env = el.adsr(0.1, 0.4, 0, 0.2, metro);
     core.render(el.mul(0, metro));
     const synth = el.mul(
-      el.cycle(el.const({ key: `master-freq`, value: frequency })),
+      el.cycle(el.const({ key: `main-freq`, value: frequency })),
       env
     );
     core.render(
       el.mul(
         synth,
-        el.const({ key: `master-amp-left`, value: masterVolume / 100 })
+        el.const({ key: `main-amp-left`, value: mainVolume / 100 })
       ),
       el.mul(
         synth,
-        el.const({ key: `master-amp-right`, value: masterVolume / 100 })
+        el.const({ key: `main-amp-right`, value: mainVolume / 100 })
       )
     );
-  }, [masterVolume, core, frequency, scaledSpeedInMs]);
+  }, [mainVolume, core, frequency, scaledSpeedInMs]);
 
   const togglePlay = () => {
     if (playing) {
@@ -124,19 +123,13 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
     setSpeedInMs(presets[i][1]);
     setUpperLimit(presets[i][2]);
     setLowerLimit(presets[i][3]);
-    setIntervalMultiplier(presets[i][4]);
+    setIntervalDivisor(presets[i][4]);
   }
 
   function addNewPreset() {
     setPresets((presets) => [
       ...presets,
-      [
-        startingFrequency,
-        speedInMs,
-        upperLimit,
-        lowerLimit,
-        intervalMultiplier,
-      ],
+      [startingFrequency, speedInMs, upperLimit, lowerLimit, intervalDivisor],
     ]);
   }
 
@@ -160,15 +153,15 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
       </div>
       <h3>Frequency: {frequency.toFixed(3)}</h3>
       <h2>
-        master volume = <SliderLabel>{masterVolume}</SliderLabel>
+        main volume = <SliderLabel>{mainVolume}</SliderLabel>
       </h2>
       <Slider
         type={"range"}
-        value={masterVolume}
+        value={mainVolume}
         min={0}
         step={0.1}
         max={100}
-        onChange={(event) => setMasterVolume(parseFloat(event.target.value))}
+        onChange={(event) => setMainVolume(parseFloat(event.target.value))}
       />
       <h2>
         starting frequency (hz) ={" "}
@@ -220,18 +213,16 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
         onChange={(event) => setLowerLimit(parseFloat(event.target.value))}
       />
       <h2>
-        interval multiplier (2.0 = octave) ={" "}
-        <SliderLabel>{scaledIntervalMultiplier.toFixed(3)}</SliderLabel>
+        interval divisor (2.0 = octave) ={" "}
+        <SliderLabel>{scaledIntervalDivisor.toFixed(3)}</SliderLabel>
       </h2>
       <Slider
         type={"range"}
-        value={intervalMultiplier}
+        value={intervalDivisor}
         min={0}
         step={0.01}
         max={17}
-        onChange={(event) =>
-          setIntervalMultiplier(parseFloat(event.target.value))
-        }
+        onChange={(event) => setIntervalDivisor(parseFloat(event.target.value))}
       />
     </Page>
   );

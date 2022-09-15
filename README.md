@@ -1,6 +1,6 @@
 # Experiments in Elementary Audio
 
-## [Live Demo]("https://blechdom.github.io/elementary")
+[Live Demo](https://blechdom.github.io/elementary)
 
 ## To run Locally
 
@@ -20,7 +20,21 @@
 - Presets: some I saved and a button to add more
 - Main Volume: Turn this up if you want to hear anything
 - Number of Recursions: How many times should the modulated signal feedback into itself
-- Starting Amplitude: The roughly equates to the highest frequency you will hear in hz
-- Modulation Amplitude: I can't remember what this does, but it's really important
+- Modulation Amplitude: Height of modulator, roughly equates to frequency
+- Modulator Offset: Keep the LFO from having negative frequencies, if you want to
 - Starting Frequency: The frequency of the first oscillator that starts the process
-- Modulation Amplitude Multiplier: Scaling function, multiplied each recursive modulator
+- Modulation Amplitude Divisor: Scaling function, amplitude is divided by this number in each recursion
+
+### Pythagorean Spiral
+
+    Playing with the Pythagorean Comma... Multiply a frequency by a value (1.5 = Perfect 5th). If the frequency goes above a threshold, divide it by 2 (a octave) to keep the frequencies in audible range. Hear the sequences spiral around the comma...
+
+#### Parameters
+
+- Presets: some I saved and a button to add more
+- Main Volume: Turn this up if you want to hear anything
+- Starting Frequency: Give it a place to start
+- Speed (ms): how fast do you want to hear it go?
+- Upper Limit: Threshold to start dividing by a value (octave = 2.0)
+- Lower Limit: If you want the pattern to cover a larger range, lower this value
+- Interval Divisor: maybe you want to divide by a number other than 2?
