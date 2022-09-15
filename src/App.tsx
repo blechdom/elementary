@@ -16,7 +16,7 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
       <Nav>
         <ul id="navigation">
           <li>
-            <Title>Experiments using Elementary Audio</Title>
+            <Title>Experiments in Elementary Audio</Title>
           </li>
           <li>
             <Link to="/">Recursive FM</Link>
