@@ -27,13 +27,13 @@ FM synthesis where the the signal frequency is modulated by itself.
 
 ### Pythagorean Spiral
 
-Playing with the Pythagorean Comma... Multiply a frequency by a value (1.5 = Perfect 5th). If the frequency goes above a threshold, divide it by 2 (a octave) to keep the frequencies in audible range. Hear the sequences spiral around the comma...
+Playing with the Pythagorean Comma: Multiply a frequency by a value (1.5 = Perfect 5th). If the frequency goes above a threshold, divide it by 2 (an octave), to keep the frequencies in audible range. Hear the sequences spiral around the comma.
 
 #### Parameters
 
 - Presets: some I saved and a button to add more
 - Main Volume: Turn this up if you want to hear anything
-- Starting Frequency: Give it a place to start
+- Starting Frequency: Give it a place to start, a seed
 - Speed (ms): how fast do you want to hear it go?
 - Upper Limit: Threshold to start dividing by a value (octave = 2.0)
 - Lower Limit: If you want the pattern to cover a larger range, lower this value
