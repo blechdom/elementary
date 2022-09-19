@@ -1,7 +1,7 @@
 import WebRenderer from "@elemaudio/web-renderer";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { el } from "@elemaudio/core";
-import { LSystem as LSys, TLPoint } from "../util/fractals";
+import { LTimeSystem, TLTimePoint } from "../util/fractals";
 import styled from "styled-components";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
@@ -25,16 +25,16 @@ const pythagoreanTree = {
   rules: {
     X: ">[-FX]+FX<",
   },
-  iterations: 2,
+  iterations: 8,
   distance: 100,
-  angle: 25,
-  lengthScale: 0.5,
+  angle: -1,
+  lengthScale: 0.75,
 };
 
 const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
   const [playing, setPlaying] = useState(false);
   const [mainVolume, setMainVolume] = useState<number>(0);
-  const [fractalPoints, setFractalPoints] = useState<TLPoint[]>([]);
+  const [fractalPoints, setFractalPoints] = useState<TLTimePoint[]>([]);
   const [dimensions, setDimensions] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -50,9 +50,9 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
 
   useEffect(() => {
     setPlaying(false);
-    const fractal = new LSys(pythagoreanTree);
+    const fractal = new LTimeSystem(pythagoreanTree);
     fractal.run();
-    //console.log("fractal ", fractal);
+    console.log("fractal ", fractal.points);
     setFractalPoints(fractal.points);
 
     setOffsets({ x: -fractal.bounds[2], y: -fractal.bounds[3] });
@@ -70,21 +70,30 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
       const context = canvas.getContext("2d");
       if (context) {
         context.save();
-        //context.fillRect(0, 0, canvas.width, canvas.height);
-
-        const color = 255 / fractalPoints.length - 1;
 
         for (let i = 1; i < fractalPoints.length; i++) {
-          const [x, y, { paintable }] = fractalPoints[i];
+          const [x, y, depth, { paintable }] = fractalPoints[i];
+          const color = ((depth + 1) * 75) % 255;
           if (!paintable) {
             continue;
           }
 
           context.beginPath();
           const [startX, startY] = fractalPoints[i - 1];
-          context.strokeStyle = `hsl(${color * i}, 100%, 50%)`;
+          context.strokeStyle = `hsl(${color}, 100%, 50%)`;
           context.moveTo(startX + offsets.x, startY + offsets.y);
           context.lineTo(x + offsets.x, y + offsets.y);
+          console.log(
+            "shape depth: ",
+            depth,
+            " from: (",
+            startX + offsets.x,
+            startY + offsets.y,
+            ") to: (",
+            x + offsets.x,
+            y + offsets.y,
+            ")"
+          );
           context.stroke();
           context.closePath();
         }

@@ -4,7 +4,7 @@ const RAD_FACTOR = Math.PI / 180;
 
 // supported: FB+-[]<>
 
-export interface ILParams {
+export interface ILTimeParams {
   axiom: string;
   rules: Record<string, string>;
   iterations: number;
@@ -20,7 +20,7 @@ interface ILState {
   angle: number;
 }
 
-export type TLPoint = [
+export type TLTimePoint = [
   x: number,
   y: number,
   depth: number,
@@ -29,7 +29,7 @@ export type TLPoint = [
 
 const noop = (): void => undefined;
 
-export class LSystem implements IFractal {
+export class LTimeSystem implements IFractal {
   private state: ILState = {
     x: 0,
     y: 0,
@@ -47,11 +47,11 @@ export class LSystem implements IFractal {
 
   private readonly lengthScale: number;
 
-  readonly points: TLPoint[] = [[0, 0, 0, { paintable: false }]];
+  readonly points: TLTimePoint[] = [[0, 0, 0, { paintable: false }]];
 
   bounds: TBounds = [0, 0, 0, 0];
 
-  constructor(params: ILParams) {
+  constructor(params: ILTimeParams) {
     this.instructions = "";
     this.distance = params.distance;
     this.angle = params.angle;
@@ -169,10 +169,10 @@ export class LSystem implements IFractal {
   }
 
   right(): void {
-    this.state.angle = (this.state.angle - this.angle) % 360;
+    this.state.angle = (this.state.angle - this.angle) % 90;
   }
 
   left(): void {
-    this.state.angle = (this.state.angle + this.angle) % 360;
+    this.state.angle = (this.state.angle + this.angle) % 90;
   }
 }

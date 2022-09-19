@@ -1,4 +1,4 @@
-import { IFractal, TBounds, TPointCb } from './types';
+import { IFractal, TBounds, TPointCb } from "./types";
 
 export interface IIFSMatrix {
   p: number;
@@ -7,7 +7,12 @@ export interface IIFSMatrix {
 type TEPoint = { x: number; y: number };
 export type TEquation = (x: number, y: number, m: IIFSMatrix) => TEPoint;
 
-export type TIFSPoint = [x: number, y: number, meta: { matrixNum: number }];
+export type TIFSPoint = [
+  x: number,
+  y: number,
+  depth: number,
+  meta: { matrixNum: number }
+];
 export interface IIFSParams {
   matrices: IIFSMatrix[];
   density?: number;
@@ -83,6 +88,8 @@ export class IFS implements IFractal {
       const sx = x * this.density;
       const sy = y * this.density;
 
+      const depth = 0; // add functionality here
+
       this.bounds = [
         Math.max(this.bounds[0], sx),
         Math.max(this.bounds[1], sy),
@@ -90,10 +97,10 @@ export class IFS implements IFractal {
         Math.min(this.bounds[3], sy),
       ];
 
-      this.points.push([sx, sy, { matrixNum: matrix.index }]);
+      this.points.push([sx, sy, depth, { matrixNum: matrix.index }]);
 
-      if (typeof fn === 'function') {
-        fn([sx, sy, { matrixNum: matrix.index }], i);
+      if (typeof fn === "function") {
+        fn([sx, sy, depth, { matrixNum: matrix.index }], i);
       }
     }
   }
