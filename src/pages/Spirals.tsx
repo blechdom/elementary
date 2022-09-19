@@ -75,6 +75,7 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   }, [upperLimit, scaledLowerLimit, scaledUpperLimit]);
 
   core.on("metro", function (e) {
+    console.log("metro", e);
     let nextFreq = frequency * scaledIntervalDivisor;
     if (nextFreq > scaledUpperLimit) {
       do {

@@ -2,7 +2,10 @@ import { Route, Routes, Link } from "react-router-dom";
 import styled from "styled-components";
 import WebRenderer from "@elemaudio/web-renderer";
 import About from "./pages/About";
+import IFSystem from "./pages/IFSystem";
+import LSystem from "./pages/LSystem";
 import RecursiveFM from "./pages/RecursiveFM";
+import RecursiveAM from "./pages/RecursiveAM";
 import Spirals from "./pages/Spirals";
 
 type AppProps = {
@@ -19,10 +22,19 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
             <Title>Experiments in Elementary Audio</Title>
           </li>
           <li>
-            <Link to="/">Recursive FM</Link>
+            <Link to="/">[Recursive FM]</Link>
           </li>
           <li>
-            <Link to="/spirals">Pythagorean Spirals</Link>
+            <Link to="/spirals">[Pythagorean Spirals]</Link>
+          </li>
+          <li>
+            <Link to="/recursiveam">[Recursive AM]</Link>
+          </li>
+          <li>
+            <Link to="/ifsystem">[Iterated Function System]</Link>
+          </li>
+          <li>
+            <Link to="/lsystem">[L-System]</Link>
           </li>
           <li>
             <Link to="/about">About</Link>
@@ -38,6 +50,18 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
         <Route
           path="/spirals"
           element={<Spirals audioContext={audioContext} core={core} />}
+        />
+        <Route
+          path="/ifsystem"
+          element={<IFSystem audioContext={audioContext} core={core} />}
+        />
+        <Route
+          path="/lsystem"
+          element={<LSystem audioContext={audioContext} core={core} />}
+        />
+        <Route
+          path="/recursiveam"
+          element={<RecursiveAM audioContext={audioContext} core={core} />}
         />
         <Route path="/about" element={<About />} />
       </Routes>

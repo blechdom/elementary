@@ -7,65 +7,76 @@ import Slider from "../components/Slider";
 import Page from "../components/Page";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
-type RecursiveFMProps = {
+type RecursiveAMProps = {
   audioContext: AudioContext;
   core: WebRenderer;
 };
 
-const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
+const RecursiveAM: React.FC<RecursiveAMProps> = ({ audioContext, core }) => {
   const [playing, setPlaying] = useState(false);
-  const [steps, setSteps] = useState<number>(3);
-  const [modAmp, setModAmp] = useState<number>(7307);
-  const [startAmp, setStartAmp] = useState<number>(19280);
-  const [startFreq, setStartFreq] = useState<number>(3.32);
-  const [modAmpMult, setModAmpMult] = useState<number>(3.68);
-  const [masterVolume, setMasterVolume] = useState<number>(0);
+  const [steps, setSteps] = useState<number>(1);
+  const [modAmp, setModAmp] = useState<number>(0.5);
+  const [modFreq, setModFreq] = useState<number>(1.0);
+  const [modOffset, setModOffset] = useState<number>(0.5);
+  const [startFreq, setStartFreq] = useState<number>(300);
+  const [modFreqDiv, setModFreqDiv] = useState<number>(2);
+  const [modAmpDiv, setModAmpDiv] = useState<number>(2);
+  const [modOffsetDiv, setModOffsetDiv] = useState<number>(2);
+  const [mainVolume, setMainVolume] = useState<number>(0);
 
   const [presets, setPresets] = useState([
-    [3, 7307, 19280, 3.32, 3.68],
-    [2, 1650, 925, 0.06, 0.18],
-    [5, 4236, 4164, 0.09, 1.63],
-    [3, 7342, 1131, 7, 0.68],
+    [3, 7307, 3.32, 3.68, 0],
+    [2, 6508, 5.25, 5.56, 5057],
+    [2, 1650, 0.06, 0.18, 0],
+    [5, 4236, 0.18, 1.53, 4000],
+    [3, 2340, 7, 0.75, 2000],
   ]);
 
-  const recursiveFM = useCallback(
-    (t: NodeRepr_t, amp: number, counter: number): NodeRepr_t => {
+  const recursiveAM = useCallback(
+    (t: NodeRepr_t, freq: number, counter: number): NodeRepr_t => {
       return counter > 0
-        ? recursiveFM(
-            el.cycle(
-              el.mul(t, el.const({ key: `amp-${counter}`, value: amp }))
-            ),
-            amp / modAmpMult,
+        ? recursiveAM(
+            el.mul(
+              t,
+              el.cycle(el.const({ key: `modulator-${counter}`, value: freq }))
+            ) as NodeRepr_t,
+            freq / modFreqDiv,
             counter - 1
           )
         : t;
     },
-    [modAmpMult]
+    [modAmpDiv]
   );
 
   const playSynth = useCallback(() => {
-    const synth = recursiveFM(
-      el.cycle(
-        el.mul(
-          el.cycle(el.const({ key: `start-freq`, value: startFreq })),
-          el.const({ key: `start-amp`, value: startAmp })
-        )
-      ),
-      modAmp,
-      steps
+    const carrier: NodeRepr_t = el.cycle(
+      el.const({ key: "freq", value: startFreq })
     );
-
+    const modulator = el.cycle(el.const({ key: "mod", value: modFreq }));
+    const synth = el.mul(
+      carrier,
+      recursiveAM(modulator as NodeRepr_t, modFreq, steps)
+    );
     core.render(
       el.mul(
         synth,
-        el.const({ key: `master-amp-left`, value: masterVolume / 100 })
+        el.const({ key: `main-amp-left`, value: mainVolume / 100 })
       ),
       el.mul(
         synth,
-        el.const({ key: `master-amp-right`, value: masterVolume / 100 })
+        el.const({ key: `main-amp-right`, value: mainVolume / 100 })
       )
     );
-  }, [modAmp, steps, startAmp, startFreq, recursiveFM, masterVolume, core]);
+  }, [
+    modAmp,
+    steps,
+    startFreq,
+    mainVolume,
+    core,
+    modFreq,
+    modOffset,
+    recursiveAM,
+  ]);
 
   const togglePlay = () => {
     if (playing) {
@@ -84,21 +95,20 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
   function loadPreset(i: number) {
     setSteps(presets[i][0]);
     setModAmp(presets[i][1]);
-    setStartAmp(presets[i][2]);
-    setStartFreq(presets[i][3]);
-    setModAmpMult(presets[i][4]);
+    setStartFreq(presets[i][2]);
+    setModAmpDiv(presets[i][3]);
   }
 
   function addNewPreset() {
     setPresets((presets) => [
       ...presets,
-      [steps, modAmp, startAmp, startFreq, modAmpMult],
+      [steps, modAmp, startFreq, modAmpDiv],
     ]);
   }
 
   return (
     <Page>
-      <h1>Recursive FM Synthesis</h1>
+      <h1>Recursive AM Synthesis</h1>
       <PlayButton onClick={togglePlay}>
         <h2> {playing ? " Pause " : " Play "} </h2>
       </PlayButton>
@@ -115,15 +125,15 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
         </Button>
       </div>
       <h2>
-        master volume = <SliderLabel>{masterVolume}</SliderLabel>
+        main volume = <SliderLabel>{mainVolume}</SliderLabel>
       </h2>
       <Slider
         type={"range"}
-        value={masterVolume}
+        value={mainVolume}
         min={0}
         step={0.1}
         max={100}
-        onChange={(event) => setMasterVolume(parseFloat(event.target.value))}
+        onChange={(event) => setMainVolume(parseFloat(event.target.value))}
       />
       <h2>
         number of recursions = <SliderLabel>{steps}</SliderLabel>
@@ -137,24 +147,15 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
         onChange={(event) => setSteps(parseFloat(event.target.value))}
       />
       <h2>
-        starting amplitude = <SliderLabel>{startAmp}</SliderLabel>
+        modulation frequency = <SliderLabel>{modFreq}</SliderLabel>
       </h2>
       <Slider
         type={"range"}
-        value={startAmp}
+        value={modFreq}
         min={0}
-        max={20000}
-        onChange={(event) => setStartAmp(parseFloat(event.target.value))}
-      />
-      <h2>
-        modulation amplitude = <SliderLabel>{modAmp}</SliderLabel>
-      </h2>
-      <Slider
-        type={"range"}
-        value={modAmp}
-        min={0}
-        max={20000}
-        onChange={(event) => setModAmp(parseFloat(event.target.value))}
+        step={0.01}
+        max={100}
+        onChange={(event) => setModFreq(parseFloat(event.target.value))}
       />
       <h2>
         starting frequency = <SliderLabel>{startFreq}</SliderLabel>
@@ -164,20 +165,19 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
         value={startFreq}
         step={0.01}
         min={0}
-        max={40}
+        max={400}
         onChange={(event) => setStartFreq(parseFloat(event.target.value))}
       />
       <h2>
-        modulation amplitude multiplier ={" "}
-        <SliderLabel>{modAmpMult}</SliderLabel>
+        modulation frequency divisor = <SliderLabel>{modFreqDiv}</SliderLabel>
       </h2>
       <Slider
         type={"range"}
-        value={modAmpMult}
+        value={modFreqDiv}
         min={0.01}
         step={0.01}
         max={8}
-        onChange={(event) => setModAmpMult(parseFloat(event.target.value))}
+        onChange={(event) => setModFreqDiv(parseFloat(event.target.value))}
       />
     </Page>
   );
@@ -217,4 +217,4 @@ const Presets = styled.div`
   margin-right: 25px;
 `;
 
-export default RecursiveFM;
+export default RecursiveAM;
