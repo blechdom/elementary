@@ -5,6 +5,7 @@ import { LTimeSystem, TLTimePoint } from "../util/fractals";
 import styled from "styled-components";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
+import { lSystemPresets, LSystemParams } from "../util/lSystemPresets";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
 function exponentialScale(value: number): number {
@@ -18,35 +19,10 @@ type LSystemProps = {
   core: WebRenderer;
 };
 
-type LSystemParams = {
-  axiom: string;
-  rules: {
-    F?: string;
-    X?: string;
-    Y?: string;
-    L?: string;
-    R?: string;
-  };
-  iterations: number;
-  distance: number;
-  angle: number;
-  lengthScale: number;
-};
-
-const pythagoreanTree: LSystemParams = {
-  axiom: "FX",
-  rules: {
-    X: ">[-FX]+FX<",
-  },
-  iterations: 6,
-  distance: 5.0,
-  angle: 40,
-  lengthScale: 0.5,
-};
-
 const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
-  const [lSystemParams, setLSystemParams] =
-    useState<LSystemParams>(pythagoreanTree);
+  const [currentLSystem, setCurrentLSystem] = useState<LSystemParams>(
+    lSystemPresets[0]
+  );
   const [playing, setPlaying] = useState(false);
   const [mainVolume, setMainVolume] = useState<number>(0);
   const [fractalPoints, setFractalPoints] = useState<TLTimePoint[]>([]);
@@ -58,16 +34,16 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
     x: 0,
     y: 0,
   });
-  const [scaleX, setScaleX] = useState<number>(100);
-  const [scaleY, setScaleY] = useState<number>(100);
+  const [scaleX, setScaleX] = useState<number>(1);
+  const [scaleY, setScaleY] = useState<number>(1);
   const [freqs, setFreqs] = useState<number[]>([4, 5, 6]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     setPlaying(false);
-    const fractal = new LTimeSystem(pythagoreanTree);
+    const fractal = new LTimeSystem(currentLSystem);
     fractal.run();
-    console.log("fractal ", fractal.points);
+    //console.log("fractal ", fractal.points);
     setFractalPoints(fractal.points);
 
     setOffsets({ x: -fractal.bounds[2], y: -fractal.bounds[3] });
@@ -75,7 +51,7 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
       x: fractal.bounds[0] + Math.abs(fractal.bounds[2]),
       y: fractal.bounds[1] + Math.abs(fractal.bounds[3]),
     });
-  }, []);
+  }, [currentLSystem]);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -99,7 +75,7 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
           context.lineTo(y * scaleX * -1, (x + offsets.x) * scaleY);
           context.stroke();
           context.closePath();
-          console.log("start ", startY, startX, " end ", y, x);
+          // console.log("start ", startY, startX, " end ", y, x);
         }
         context.restore();
       }
@@ -134,6 +110,10 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
     setPlaying((play) => !play);
   };
 
+  let handlePresetChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setCurrentLSystem(lSystemPresets[parseInt(event.target.value)]);
+  };
+
   useEffect(() => {
     playSynth();
   }, [playSynth]);
@@ -144,6 +124,13 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
       <PlayButton onClick={togglePlay}>
         <h2> {playing ? " Pause " : " Play "} </h2>
       </PlayButton>
+      <select onChange={handlePresetChange}>
+        {lSystemPresets.map((system, index) => (
+          <option key={`lSystemPreset-${index}`} value={index}>
+            {system.name}
+          </option>
+        ))}
+      </select>
       <h2>
         main volume = <SliderLabel>{mainVolume}</SliderLabel>
       </h2>
@@ -161,7 +148,7 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
       <Slider
         type={"range"}
         value={scaleY}
-        min={1}
+        min={0.1}
         step={0.1}
         max={100}
         onChange={(event) => setScaleY(parseFloat(event.target.value))}
@@ -172,8 +159,8 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
       <Slider
         type={"range"}
         value={scaleX}
-        min={0}
-        step={1}
+        min={0.1}
+        step={0.1}
         max={100}
         onChange={(event) => setScaleX(parseFloat(event.target.value))}
       />
