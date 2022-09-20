@@ -13,25 +13,40 @@ function exponentialScale(value: number): number {
   return a * Math.pow(b, value);
 }
 
-//type TLPoint = [x: number, y: number, meta: { paintable: boolean }];
-
 type LSystemProps = {
   audioContext: AudioContext;
   core: WebRenderer;
 };
 
-const pythagoreanTree = {
+type LSystemParams = {
+  axiom: string;
+  rules: {
+    F?: string;
+    X?: string;
+    Y?: string;
+    L?: string;
+    R?: string;
+  };
+  iterations: number;
+  distance: number;
+  angle: number;
+  lengthScale: number;
+};
+
+const pythagoreanTree: LSystemParams = {
   axiom: "FX",
   rules: {
     X: ">[-FX]+FX<",
   },
-  iterations: 8,
-  distance: 100,
-  angle: -1,
-  lengthScale: 0.75,
+  iterations: 6,
+  distance: 5.0,
+  angle: 40,
+  lengthScale: 0.5,
 };
 
 const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
+  const [lSystemParams, setLSystemParams] =
+    useState<LSystemParams>(pythagoreanTree);
   const [playing, setPlaying] = useState(false);
   const [mainVolume, setMainVolume] = useState<number>(0);
   const [fractalPoints, setFractalPoints] = useState<TLTimePoint[]>([]);
@@ -65,8 +80,8 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
   useEffect(() => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
-      canvas.width = dimensions.x;
-      canvas.height = dimensions.y;
+      canvas.width = dimensions.y * scaleX;
+      canvas.height = dimensions.x * scaleY;
       const context = canvas.getContext("2d");
       if (context) {
         context.save();
@@ -77,25 +92,14 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
           if (!paintable) {
             continue;
           }
-
           context.beginPath();
           const [startX, startY] = fractalPoints[i - 1];
           context.strokeStyle = `hsl(${color}, 100%, 50%)`;
-          context.moveTo(startX + offsets.x, startY + offsets.y);
-          context.lineTo(x + offsets.x, y + offsets.y);
-          console.log(
-            "shape depth: ",
-            depth,
-            " from: (",
-            startX + offsets.x,
-            startY + offsets.y,
-            ") to: (",
-            x + offsets.x,
-            y + offsets.y,
-            ")"
-          );
+          context.moveTo(startY * scaleX * -1, (startX + offsets.x) * scaleY);
+          context.lineTo(y * scaleX * -1, (x + offsets.x) * scaleY);
           context.stroke();
           context.closePath();
+          console.log("start ", startY, startX, " end ", y, x);
         }
         context.restore();
       }
