@@ -21,7 +21,7 @@ export const lSystemPresets: LSystemParams[] = [
     rules: {
       X: ">[-FX]+FX<",
     },
-    iterations: 10,
+    iterations: 1,
     distance: 100,
     angle: 50,
     lengthScale: 0.7,

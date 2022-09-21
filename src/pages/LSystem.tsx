@@ -1,11 +1,13 @@
 import WebRenderer from "@elemaudio/web-renderer";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { el } from "@elemaudio/core";
+import { el, NodeRepr_t } from "@elemaudio/core";
 import { LTimeSystem, TLTimePoint } from "../util/fractals";
 import styled from "styled-components";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 import { lSystemPresets, LSystemParams } from "../util/lSystemPresets";
+import { NumberLiteralType } from "typescript";
+import { NodeRuntime } from "inspector";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
 function exponentialScale(value: number): number {
@@ -37,13 +39,14 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
   const [scaleX, setScaleX] = useState<number>(1);
   const [scaleY, setScaleY] = useState<number>(1);
   const [freqs, setFreqs] = useState<number[]>([4, 5, 6]);
+  const [soundList, setSoundList] =
+    useState<[number, number, number, number][]>();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     setPlaying(false);
     const fractal = new LTimeSystem(currentLSystem);
     fractal.run();
-    //console.log("fractal ", fractal.points);
     setFractalPoints(fractal.points);
 
     setOffsets({ x: -fractal.bounds[2], y: -fractal.bounds[3] });
@@ -59,6 +62,7 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
       canvas.width = dimensions.y * scaleX;
       canvas.height = dimensions.x * scaleY;
       const context = canvas.getContext("2d");
+      let audibleFractal: [number, number, number, number][] = [];
       if (context) {
         context.save();
 
@@ -75,37 +79,92 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
           context.lineTo(y * scaleX * -1, (x + offsets.x) * scaleY);
           context.stroke();
           context.closePath();
-          // console.log("start ", startY, startX, " end ", y, x);
+          audibleFractal.push([-startY, startX + offsets.x, -y, x + offsets.x]);
         }
         context.restore();
       }
+
+      const timeSortedAudibleFractal: [number, number, number, number][] =
+        audibleFractal.sort(function (a, b) {
+          return a[0] - b[0];
+        });
+      setSoundList(timeSortedAudibleFractal);
     }
   }, [offsets, dimensions, fractalPoints, scaleX, scaleY]);
 
-  const playSynth = useCallback(() => {
-    console.log("play synth");
+  function sineTone(t: NodeRepr_t) {
+    return el.sin(el.mul(2 * Math.PI, t));
+  }
 
-    const seqFreq = el.seq2({ seq: freqs }, el.train(100 / scaleY), 0);
-    const scaledSeqFreq = el.add(el.mul(seqFreq, scaleX), 800);
-    const synth = el.cycle(scaledSeqFreq);
-    core.render(
-      el.mul(
-        synth,
-        el.const({ key: `main-amp-left`, value: mainVolume / 100 })
-      ),
-      el.mul(
-        synth,
-        el.const({ key: `main-amp-right`, value: mainVolume / 100 })
-      )
-    );
-  }, [mainVolume, core, scaleX, scaleY, freqs, offsets.x]);
+  const makeNote = useCallback(
+    (startFreq: number, endFreq: number, duration: number) => {
+      let gate = el.sparseq(
+        {
+          seq: [
+            { value: 1, tickTime: 0 },
+            { value: 0, tickTime: 100 },
+          ],
+        },
+        el.train(1),
+        0
+      );
+
+      const scaledStartFreq = startFreq * 3;
+      const scaledEndFreq = endFreq * 3;
+      console.log(
+        "makenote from ",
+        scaledStartFreq,
+        " to ",
+        scaledEndFreq,
+        " for ",
+        duration
+      );
+      let durationInMs = duration * 10;
+
+      let env = el.smooth(el.tau2pole(0.2), gate);
+
+      let lilSynthNote = el.mul(
+        env,
+        sineTone(
+          el.phasor(
+            el.add(
+              scaledStartFreq,
+              el.mul(scaledEndFreq, el.phasor(durationInMs / 1000, 0))
+            ),
+            0
+          )
+        )
+      );
+      core.render(
+        el.mul(
+          lilSynthNote,
+          el.const({ key: `main-amp-left`, value: mainVolume / 100 })
+        ),
+        el.mul(
+          lilSynthNote,
+          el.const({ key: `main-amp-right`, value: mainVolume / 100 })
+        )
+      );
+    },
+    [mainVolume, core]
+  );
+
+  useEffect(() => {
+    if (soundList !== undefined && soundList?.length > 1) {
+      soundList.forEach((note, index) => {
+        setTimeout(function () {
+          //console.log("waiting this long", note[0]);
+          makeNote(note[1], note[3], note[2] - note[0]);
+        }, note[0] * 10);
+      });
+    }
+  }, [soundList, makeNote]);
 
   const togglePlay = () => {
     if (playing) {
       audioContext.suspend();
     } else {
       audioContext.resume();
-      playSynth();
     }
     setPlaying((play) => !play);
   };
@@ -113,10 +172,6 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
   let handlePresetChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setCurrentLSystem(lSystemPresets[parseInt(event.target.value)]);
   };
-
-  useEffect(() => {
-    playSynth();
-  }, [playSynth]);
 
   return (
     <Page>
