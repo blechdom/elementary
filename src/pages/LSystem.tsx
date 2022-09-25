@@ -6,20 +6,26 @@ import styled from "styled-components";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 import { lSystemPresets, LSystemParams } from "../util/lSystemPresets";
-import { NumberLiteralType } from "typescript";
-import { NodeRuntime } from "inspector";
 require("events").EventEmitter.defaultMaxListeners = 0;
-
-function exponentialScale(value: number): number {
-  const a = 10;
-  const b = Math.pow(a, 1 / a);
-  return a * Math.pow(b, value);
-}
 
 type LSystemProps = {
   audioContext: AudioContext;
   core: WebRenderer;
 };
+
+type Note = {
+  key: string;
+  gate: number;
+  duration: number;
+  startTime: number;
+  endTime: number;
+  startFreq: number;
+  endFreq: number;
+};
+
+function makeNoteName(note: [number, number, number, number]) {
+  return `note_${note[0]}_${note[1]}_${note[2]}_${note[3]}`;
+}
 
 const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
   const [currentLSystem, setCurrentLSystem] = useState<LSystemParams>(
@@ -38,9 +44,11 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
   });
   const [scaleX, setScaleX] = useState<number>(1);
   const [scaleY, setScaleY] = useState<number>(1);
-  const [freqs, setFreqs] = useState<number[]>([4, 5, 6]);
-  const [soundList, setSoundList] =
-    useState<[number, number, number, number][]>();
+  const [soundList, setSoundList] = useState<Note[]>([]);
+
+  const soundListRef = useRef(soundList);
+  soundListRef.current = soundList;
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -62,9 +70,9 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
       canvas.width = dimensions.y * scaleX;
       canvas.height = dimensions.x * scaleY;
       const context = canvas.getContext("2d");
-      let audibleFractal: [number, number, number, number][] = [];
       if (context) {
         context.save();
+        let audibleSoundPaths: Note[] = [];
 
         for (let i = 1; i < fractalPoints.length; i++) {
           const [x, y, depth, { paintable }] = fractalPoints[i];
@@ -79,92 +87,103 @@ const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
           context.lineTo(y * scaleX * -1, (x + offsets.x) * scaleY);
           context.stroke();
           context.closePath();
-          audibleFractal.push([-startY, startX + offsets.x, -y, x + offsets.x]);
+
+          const soundName: string = makeNoteName([
+            -startY,
+            -y,
+            startX + offsets.x,
+            x + offsets.x,
+          ]);
+          const newNote = {
+            key: soundName,
+            gate: 0,
+            startTime: -startY,
+            endTime: -y,
+            duration: -startY - -y,
+            startFreq: startX + offsets.x,
+            endFreq: x + offsets.x,
+          };
+          // startTime, endTime, startFreq, endFreq
+          audibleSoundPaths.push(newNote);
         }
+        const audibleSortedSoundPaths = audibleSoundPaths.sort(
+          (a, b) => a.startTime - b.startTime
+        );
+        console.log("audibleSortedSoundPaths", audibleSortedSoundPaths);
+        setSoundList(audibleSortedSoundPaths);
         context.restore();
       }
-
-      const timeSortedAudibleFractal: [number, number, number, number][] =
-        audibleFractal.sort(function (a, b) {
-          return a[0] - b[0];
-        });
-      setSoundList(timeSortedAudibleFractal);
     }
   }, [offsets, dimensions, fractalPoints, scaleX, scaleY]);
 
-  function sineTone(t: NodeRepr_t) {
-    return el.sin(el.mul(2 * Math.PI, t));
-  }
+  const synthNote = useCallback((note: Note): NodeRepr_t => {
+    console.log("note: ", note.key, " gate: ", note.gate);
+    return el.mul(
+      el.const({ key: `amp-${note.key}`, value: 0.2 * note.gate }),
+      el.cycle(
+        el.const({ key: `freq-${note.key}`, value: note.startFreq + 300 })
+      )
+    ) as NodeRepr_t;
+  }, []);
 
-  const makeNote = useCallback(
-    (startFreq: number, endFreq: number, duration: number) => {
-      let gate = el.sparseq(
-        {
-          seq: [
-            { value: 1, tickTime: 0 },
-            { value: 0, tickTime: 100 },
-          ],
-        },
-        el.train(1),
-        0
-      );
+  const playSynth = useCallback(() => {
+    console.log("currentNotes", soundList);
+    //let tone = el.cycle(440);
+    /*
+    for (const value of map1.values()) {eee
+  console.log(value); // 👉️ Tom, Germany, 30
+}
+*/
+    if (soundList !== undefined && soundList.length > 0) {
+      let tone = el.add(...soundList.map(synthNote));
+      core.render(tone, tone);
+    }
+  }, [core, soundList, synthNote]);
 
-      const scaledStartFreq = startFreq * 3;
-      const scaledEndFreq = endFreq * 3;
-      console.log(
-        "makenote from ",
-        scaledStartFreq,
-        " to ",
-        scaledEndFreq,
-        " for ",
-        duration
-      );
-      let durationInMs = duration * 10;
-
-      let env = el.smooth(el.tau2pole(0.2), gate);
-
-      let lilSynthNote = el.mul(
-        env,
-        sineTone(
-          el.phasor(
-            el.add(
-              scaledStartFreq,
-              el.mul(scaledEndFreq, el.phasor(durationInMs / 1000, 0))
-            ),
-            0
-          )
-        )
-      );
-      core.render(
-        el.mul(
-          lilSynthNote,
-          el.const({ key: `main-amp-left`, value: mainVolume / 100 })
-        ),
-        el.mul(
-          lilSynthNote,
-          el.const({ key: `main-amp-right`, value: mainVolume / 100 })
-        )
-      );
-    },
-    [mainVolume, core]
-  );
-
-  useEffect(() => {
-    if (soundList !== undefined && soundList?.length > 1) {
-      soundList.forEach((note, index) => {
+  const updateSoundList = useCallback(() => {
+    if (
+      soundListRef.current !== undefined &&
+      soundListRef.current?.length > 1
+    ) {
+      soundListRef.current.forEach((note, index) => {
         setTimeout(function () {
-          //console.log("waiting this long", note[0]);
-          makeNote(note[1], note[3], note[2] - note[0]);
-        }, note[0] * 10);
+          console.log("turn on gate for: ", note.key);
+          const updatedNotes = soundListRef.current.map((updateNote) => {
+            if (note.key === updateNote.key) {
+              console.log("found note to turn on gate for: ", note.key);
+              return { ...updateNote, gate: 1.0 };
+            }
+            return updateNote;
+          });
+          console.log("updatedNotes on ", updatedNotes);
+          setSoundList(updatedNotes);
+          setTimeout(function () {
+            console.log("turn off gate for: ", note.key);
+            const updatedNotes = soundListRef.current.map((updateNote) => {
+              if (note.key === updateNote.key) {
+                console.log("found note to turn off gate for: ", note.key);
+                return { ...updateNote, gate: 0.0 };
+              }
+              return updateNote;
+            });
+            console.log("updatedNotes off ", updatedNotes);
+            setSoundList(updatedNotes);
+          }, (note.startTime - note.endTime) * 10);
+        }, note.startTime * 10);
       });
     }
-  }, [soundList, makeNote]);
+  }, [soundListRef]);
+
+  useEffect(() => {
+    playSynth();
+  }, [soundListRef, playSynth]);
 
   const togglePlay = () => {
     if (playing) {
       audioContext.suspend();
     } else {
       audioContext.resume();
+      updateSoundList();
     }
     setPlaying((play) => !play);
   };

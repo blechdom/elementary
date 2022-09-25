@@ -2,6 +2,7 @@ import { Route, Routes, Link } from "react-router-dom";
 import styled from "styled-components";
 import WebRenderer from "@elemaudio/web-renderer";
 import About from "./pages/About";
+import Counter from "./pages/Counter";
 import IFSystem from "./pages/IFSystem";
 import LSystem from "./pages/LSystem";
 import RecursiveFM from "./pages/RecursiveFM";
@@ -37,6 +38,9 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
             <Link to="/lsystem">[L-System]</Link>
           </li>
           <li>
+            <Link to="/counter">[Counter]</Link>
+          </li>
+          <li>
             <Link to="/about">About</Link>
           </li>
         </ul>
@@ -54,6 +58,10 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
         <Route
           path="/ifsystem"
           element={<IFSystem audioContext={audioContext} core={core} />}
+        />
+        <Route
+          path="/counter"
+          element={<Counter audioContext={audioContext} core={core} />}
         />
         <Route
           path="/lsystem"
