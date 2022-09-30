@@ -1,22 +1,11 @@
-import WebRenderer from "@elemaudio/web-renderer";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { el } from "@elemaudio/core";
 import { IFS, TIFSPoint } from "fractals";
 import styled from "styled-components";
+import { ElementaryPageProps } from "../App";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 require("events").EventEmitter.defaultMaxListeners = 0;
-
-function exponentialScale(value: number): number {
-  const a = 10;
-  const b = Math.pow(a, 1 / a);
-  return a * Math.pow(b, value);
-}
-
-type IFSProps = {
-  audioContext: AudioContext;
-  core: WebRenderer;
-};
 
 const fern = {
   matrices: [
@@ -27,7 +16,7 @@ const fern = {
   ],
 };
 
-const IFSystem: React.FC<IFSProps> = ({ audioContext, core }) => {
+const IFSystem: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
   const [playing, setPlaying] = useState(false);
   const [mainVolume, setMainVolume] = useState<number>(0);
   const [fractalPoints, setFractalPoints] = useState<

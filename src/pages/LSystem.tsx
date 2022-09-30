@@ -1,17 +1,12 @@
-import WebRenderer from "@elemaudio/web-renderer";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { el, NodeRepr_t } from "@elemaudio/core";
 import { LTimeSystem, TLTimePoint } from "../util/fractals";
 import styled from "styled-components";
+import { ElementaryPageProps } from "../App";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 import { lSystemPresets, LSystemParams } from "../util/lSystemPresets";
 require("events").EventEmitter.defaultMaxListeners = 0;
-
-type LSystemProps = {
-  audioContext: AudioContext;
-  core: WebRenderer;
-};
 
 type Note = {
   key: string;
@@ -27,7 +22,7 @@ function makeNoteName(note: [number, number, number, number]) {
   return `note_${note[0]}_${note[1]}_${note[2]}_${note[3]}`;
 }
 
-const LSystem: React.FC<LSystemProps> = ({ audioContext, core }) => {
+const LSystem: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
   const [currentLSystem, setCurrentLSystem] = useState<LSystemParams>(
     lSystemPresets[0]
   );

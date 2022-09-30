@@ -1,15 +1,10 @@
-import WebRenderer from "@elemaudio/web-renderer";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { el, NodeRepr_t } from "@elemaudio/core";
 import styled from "styled-components";
+import { ElementaryPageProps } from "../App";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 require("events").EventEmitter.defaultMaxListeners = 0;
-
-type CounterProps = {
-  audioContext: AudioContext;
-  core: WebRenderer;
-};
 
 type Voice = {
   name: string;
@@ -20,7 +15,7 @@ type Voice = {
   endTime: number;
 };
 
-const Counter: React.FC<CounterProps> = ({ audioContext, core }) => {
+const Counter: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
   const [playing, setPlaying] = useState(false);
   const [mainVolume, setMainVolume] = useState<number>(0);
   const [voices, setVoices] = useState<Voice[]>([

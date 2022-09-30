@@ -1,22 +1,13 @@
-import WebRenderer from "@elemaudio/web-renderer";
 import { useCallback, useEffect, useState } from "react";
 import { el } from "@elemaudio/core";
 import styled from "styled-components";
+import { ElementaryPageProps } from "../App";
+import { exponentialScale } from "../util/audioTools";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
-function exponentialScale(value: number): number {
-  const a = 10;
-  const b = Math.pow(a, 1 / a);
-  return a * Math.pow(b, value);
-}
-type SpiralsProps = {
-  audioContext: AudioContext;
-  core: WebRenderer;
-};
-
-const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
+const Spirals: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
   const [playing, setPlaying] = useState(false);
   const [mainVolume, setMainVolume] = useState<number>(0);
   const [startingFrequency, setStartingFrequency] = useState<number>(15);
@@ -75,7 +66,6 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   }, [upperLimit, scaledLowerLimit, scaledUpperLimit]);
 
   core.on("metro", function (e) {
-    console.log("metro", e);
     let nextFreq = frequency * scaledIntervalDivisor;
     if (nextFreq > scaledUpperLimit) {
       do {

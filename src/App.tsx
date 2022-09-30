@@ -8,13 +8,14 @@ import LSystem from "./pages/LSystem";
 import RecursiveFM from "./pages/RecursiveFM";
 import RecursiveAM from "./pages/RecursiveAM";
 import Spirals from "./pages/Spirals";
+import ShepardRissetGlissando from "./pages/ShepardRissetGlissando";
 
-type AppProps = {
+export type ElementaryPageProps = {
   audioContext: AudioContext;
   core: WebRenderer;
 };
 
-const App: React.FC<AppProps> = ({ audioContext, core }) => {
+const App: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
   return (
     <div>
       <Nav>
@@ -29,16 +30,9 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
             <Link to="/spirals">[Pythagorean Spirals]</Link>
           </li>
           <li>
-            <Link to="/recursiveam">[Recursive AM]</Link>
-          </li>
-          <li>
-            <Link to="/ifsystem">[Iterated Function System]</Link>
-          </li>
-          <li>
-            <Link to="/lsystem">[L-System]</Link>
-          </li>
-          <li>
-            <Link to="/counter">[Counter]</Link>
+            <Link to="/shepard-risset-glissando">
+              [Shepard-Risset Glissando]
+            </Link>
           </li>
           <li>
             <Link to="/about">About</Link>
@@ -70,6 +64,12 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
         <Route
           path="/recursiveam"
           element={<RecursiveAM audioContext={audioContext} core={core} />}
+        />
+        <Route
+          path="/shepard-risset-glissando"
+          element={
+            <ShepardRissetGlissando audioContext={audioContext} core={core} />
+          }
         />
         <Route path="/about" element={<About />} />
       </Routes>

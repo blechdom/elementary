@@ -1,18 +1,13 @@
-import WebRenderer from "@elemaudio/web-renderer";
 import { useState, useCallback, useEffect } from "react";
 import { el } from "@elemaudio/core";
 import type { NodeRepr_t } from "@elemaudio/core";
 import styled from "styled-components";
+import { ElementaryPageProps } from "../App";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
-type RecursiveFMProps = {
-  audioContext: AudioContext;
-  core: WebRenderer;
-};
-
-const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
+const RecursiveFM: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
   const [playing, setPlaying] = useState(false);
   const [steps, setSteps] = useState<number>(3);
   const [modAmp, setModAmp] = useState<number>(9583);
