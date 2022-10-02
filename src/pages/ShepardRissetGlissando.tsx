@@ -4,7 +4,14 @@ import styled from "styled-components";
 import { ElementaryPageProps } from "../App";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
+import AudioVisualiser from "../components/AudioVisualiser";
+import Spectrograph from "../components/Spectrograph";
 require("events").EventEmitter.defaultMaxListeners = 0;
+
+interface ScopeEvent {
+  source?: string;
+  data: Array<Array<number>>;
+}
 
 const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
   audioContext,
@@ -15,17 +22,33 @@ const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
   const [numVoices, setNumVoices] = useState<number>(1);
   const [speed, setSpeed] = useState<number>(0.5);
   const [startFreq, setStartFreq] = useState<number>(200);
-  const [freqRange, setFreqRange] = useState<number>(1600);
+  const [intervalRatio, setIntervalRatio] = useState<number>(2);
   const [directionUp, setDirectionUp] = useState<boolean>(true);
+  const [audioVizData, setAudioVizData] = useState<Array<number>>([]);
+  const [fftVizData, setFftVizData] = useState<Array<number>>([]);
 
+  function handleLeftScopeData(data: Array<Array<number>>) {
+    if (data.length) {
+      setAudioVizData(data[0]);
+    }
+  }
+
+  function handleLeftFftData(data: any) {
+    setFftVizData(data.real);
+  }
+
+  function handleRightScopeData(event: ScopeEvent) {
+    //console.log("right ", event);
+  }
   const playSynth = useCallback(() => {
     let delayInSamples = Math.floor(
       ((1 / speed) * audioContext.sampleRate) / numVoices
     );
 
-    const modulatorUp = el.phasor(speed, 0);
+    const modulatorUp = el.pow(el.phasor(speed, 0), 2);
     const modulatorDown = el.sub(1.0, modulatorUp);
     const modulator = directionUp ? modulatorUp : modulatorDown;
+    let freqRange = startFreq * intervalRatio * numVoices;
     const ramper = el.mul(
       el.cycle(el.add(el.mul(modulator, freqRange), startFreq)),
       el.cycle(speed / 2)
@@ -46,13 +69,22 @@ const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
 
     const synth = el.add(...allVoices);
     core.render(
-      el.mul(
-        synth,
-        el.sm(el.const({ key: `main-amp-left`, value: mainVolume / 100 }))
+      el.scope(
+        { name: "left" },
+        el.fft(
+          { name: "left-fft" },
+          el.mul(
+            synth,
+            el.sm(el.const({ key: `main-amp-left`, value: mainVolume / 100 }))
+          )
+        )
       ),
-      el.mul(
-        synth,
-        el.sm(el.const({ key: `main-amp-right`, value: mainVolume / 100 }))
+      el.scope(
+        { name: "right" },
+        el.mul(
+          synth,
+          el.sm(el.const({ key: `main-amp-right`, value: mainVolume / 100 }))
+        )
       )
     );
   }, [
@@ -60,11 +92,26 @@ const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
     core,
     speed,
     startFreq,
-    freqRange,
+    intervalRatio,
     numVoices,
     audioContext.sampleRate,
     directionUp,
   ]);
+
+  core.on("scope", function (e) {
+    if (e.source === "left") {
+      handleLeftScopeData(e.data);
+    }
+    if (e.source === "right") {
+      handleRightScopeData(e.data);
+    }
+  });
+
+  core.on("fft", function (e) {
+    if (e.source === "left-fft") {
+      handleLeftFftData(e.data);
+    }
+  });
 
   const togglePlay = () => {
     if (playing) {
@@ -87,6 +134,12 @@ const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
       <PlayButton onClick={togglePlay}>
         <h2> {playing ? " Pause " : " Play "} </h2>
       </PlayButton>
+      <Oscilloscope>
+        <AudioVisualiser audioVizData={audioVizData} color="#1976d2" />
+      </Oscilloscope>
+      <Oscilloscope>
+        <Spectrograph audioVizData={fftVizData} color="#1976d2" />
+      </Oscilloscope>
       <h2>
         main volume = <SliderLabel>{mainVolume}</SliderLabel>
       </h2>
@@ -141,15 +194,16 @@ const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
         onChange={(event) => setStartFreq(parseFloat(event.target.value))}
       />
       <h2>
-        freqRange (hz) = <SliderLabel>{freqRange.toFixed(3)}</SliderLabel>
+        interval ratio (octave is 2) ={" "}
+        <SliderLabel>{intervalRatio.toFixed(3)}</SliderLabel>
       </h2>
       <Slider
         type={"range"}
-        value={freqRange}
-        min={40}
+        value={intervalRatio}
+        min={0}
         step={0.01}
-        max={20480}
-        onChange={(event) => setFreqRange(parseFloat(event.target.value))}
+        max={4.0}
+        onChange={(event) => setIntervalRatio(parseFloat(event.target.value))}
       />
     </Page>
   );
@@ -171,6 +225,12 @@ const SliderLabel = styled.span`
   display: inline-block;
   width: 150px;
   text-align: left;
+`;
+
+const Oscilloscope = styled.div`
+  width: 512px;
+  height: 100px;
+  border: 1px solid #000000;
 `;
 
 export default ShepardRissetGlissando;
