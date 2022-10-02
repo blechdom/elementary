@@ -57,31 +57,8 @@ class Spectrograph extends Component {
           audioVizData.length + 1
         );
         let x = Math.floor(audioVizData.length - logindex);
-        /*console.log("x floor: ", x);
-        if (index < x) {
-          averager += val;
-          averagerCount++;
-          console.log("in averager loop ", averager, averagerCount);
-          return;
-        }
-
-        const nextVal =
-          averagerCount > 1 ? (averager + val) / averagerCount : val;
-        console.log("only here if index == x, ", nextVal);*/
         context.beginPath();
-
         context.moveTo(x, height);
-
-        /* //interpolation of value for decimal values
-        var low = Math.floor(logindex);
-  var high = Math.ceil(logindex);
-  var lv = arr[low];
-  var hv = arr[high];
-  var w = (logindex-low)/(high-low);
-  var v = lv + (hv-lv)*w;
-  */
-
-        // const y = height / 2 + val * height;
         context.lineTo(x, height - Math.abs(val) * 2.5);
         context.stroke();
       });
