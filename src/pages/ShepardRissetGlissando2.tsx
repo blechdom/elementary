@@ -13,14 +13,14 @@ interface ScopeEvent {
   data: Array<Array<number>>;
 }
 
-const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
+const ShepardRissetGlissando2: React.FC<ElementaryPageProps> = ({
   audioContext,
   core,
 }) => {
   const [playing, setPlaying] = useState(false);
-  const [mainVolume, setMainVolume] = useState<number>(4);
+  const [mainVolume, setMainVolume] = useState<number>(45);
   const [numVoices, setNumVoices] = useState<number>(1);
-  const [speed, setSpeed] = useState<number>(0.5);
+  const [speed, setSpeed] = useState<number>(0.1);
   const [startFreq, setStartFreq] = useState<number>(200);
   const [intervalRatio, setIntervalRatio] = useState<number>(2);
   const [directionUp, setDirectionUp] = useState<boolean>(true);
@@ -40,21 +40,35 @@ const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
   function handleRightScopeData(event: ScopeEvent) {
     //console.log("right ", event);
   }
+
+  function cycle(freq: number, phaseOffset: number = 0) {
+    let t = el.add(el.phasor(freq, 0), phaseOffset);
+    let p = el.sub(t, el.floor(t));
+
+    return el.sin(el.mul(2 * Math.PI - Math.floor(Math.PI + 1 / 2), p));
+  }
+
+  /*
+  tri = sawtooth(2*pi*T_freq*ft+(pi/2), .5);
+  square(t) = sgn(sin(2πt))
+sawtooth(t) = t - floor(t + 1/2)
+triangle(t) = abs(sawtooth(t))*/
+
   const playSynth = useCallback(() => {
-    let delayInSamples = Math.floor(
+    /*let delayInSamples = Math.floor(
       ((1 / speed) * audioContext.sampleRate) / numVoices
     );
 
     const modulatorUp = el.pow(el.phasor(speed, 0), 2);
     const modulatorDown = el.sub(1.0, modulatorUp);
     const modulator = directionUp ? modulatorUp : modulatorDown;
-    let freqRange = startFreq * intervalRatio * numVoices;
-    const ramper = el.mul(
+    let freqRange = startFreq * intervalRatio * numVoices;*/
+    /* const ramper = el.mul(
       el.cycle(el.add(el.mul(modulator, freqRange), startFreq)),
       el.cycle(speed / 2)
-    );
+    );*/
 
-    const allVoices = [...Array(numVoices)].map((_, i) => {
+    /* const allVoices = [...Array(numVoices)].map((_, i) => {
       const voice = el.delay(
         { size: audioContext.sampleRate * 100 },
         el.const({
@@ -67,7 +81,8 @@ const ShepardRissetGlissando: React.FC<ElementaryPageProps> = ({
       return voice;
     });
 
-    const synth = el.add(...allVoices);
+    const synth = el.add(...allVoices);*/
+    const synth = cycle(startFreq, 0);
     core.render(
       el.scope(
         { name: "left" },
@@ -232,4 +247,4 @@ const Oscilloscope = styled.div`
   height: 100px;
 `;
 
-export default ShepardRissetGlissando;
+export default ShepardRissetGlissando2;

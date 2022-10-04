@@ -38,7 +38,13 @@ class Oscilloscope extends Component {
   }
 
   render() {
-    return <canvas width="512" height="100" ref={this.canvas} />;
+    return (
+      <canvas
+        width={this.props.width}
+        height={this.props.height}
+        ref={this.canvas}
+      />
+    );
   }
 }
 

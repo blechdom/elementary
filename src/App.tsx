@@ -9,6 +9,7 @@ import RecursiveFM from "./pages/RecursiveFM";
 import RecursiveAM from "./pages/RecursiveAM";
 import Spirals from "./pages/Spirals";
 import ShepardRissetGlissando from "./pages/ShepardRissetGlissando";
+import ShepardRissetGlissando2 from "./pages/ShepardRissetGlissando2";
 
 export type ElementaryPageProps = {
   audioContext: AudioContext;
@@ -32,6 +33,11 @@ const App: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
           <li>
             <Link to="/shepard-risset-glissando">
               [Shepard-Risset Glissando]
+            </Link>
+          </li>
+          <li>
+            <Link to="/shepard-risset-glissando-2">
+              [Shepard-Risset Glissando 2]
             </Link>
           </li>
           <li>
@@ -69,6 +75,12 @@ const App: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
           path="/shepard-risset-glissando"
           element={
             <ShepardRissetGlissando audioContext={audioContext} core={core} />
+          }
+        />
+        <Route
+          path="/shepard-risset-glissando-2"
+          element={
+            <ShepardRissetGlissando2 audioContext={audioContext} core={core} />
           }
         />
         <Route path="/about" element={<About />} />

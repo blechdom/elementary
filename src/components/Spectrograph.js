@@ -32,25 +32,16 @@ class Spectrograph extends Component {
   draw() {
     const { audioVizData, color } = this.props;
     if (audioVizData?.length > 0) {
-      console.log("audioVizData", audioVizData);
-      console.log("audioVizData.length", audioVizData.length);
       const canvas = this.canvas.current;
       const height = canvas.height;
       const width = canvas.width;
       const context = canvas.getContext("2d");
 
-      //const sliceWidth = width / audioVizData.length;
       context.lineWidth = 1;
       context.strokeStyle = color;
       context.clearRect(0, 0, width, height);
 
-      let averager = 0;
-      let averagerCount = 1;
-
       audioVizData.forEach((val, index) => {
-        console.log("index", index);
-        console.log("val", val);
-
         const logindex = toLog(
           audioVizData.length - index,
           1,
