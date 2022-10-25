@@ -5,7 +5,7 @@ import { ElementaryPageProps } from "../App";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 import AudioVisualiser from "../components/AudioVisualiser";
-import Spectrograph from "../components/Spectrograph";
+import Spectrogram from "../components/Spectrogram";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
 interface ScopeEvent {
@@ -153,7 +153,7 @@ triangle(t) = abs(sawtooth(t))*/
         <AudioVisualiser audioVizData={audioVizData} color="#1976d2" />
       </Oscilloscope>
       <Oscilloscope>
-        <Spectrograph audioVizData={fftVizData} color="#1976d2" />
+        <Spectrogram audioVizData={fftVizData} color="#1976d2" />
       </Oscilloscope>
       <h2>
         main volume = <SliderLabel>{mainVolume}</SliderLabel>

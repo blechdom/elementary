@@ -152,7 +152,9 @@ const Spirals: React.FC<ElementaryPageProps> = ({ audioContext, core }) => {
         min={0}
         step={0.1}
         max={100}
-        onChange={(event) => setMainVolume(parseFloat(event.target.value))}
+        onChange={(event) =>
+          setMainVolume(parseFloat(event.currentTarget.value))
+        }
       />
       <h2>
         starting frequency (hz) ={" "}

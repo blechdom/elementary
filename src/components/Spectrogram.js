@@ -1,25 +1,11 @@
 import React, { Component } from "react";
 
 let toLog = function (value, min, max) {
-  var exp = (value - min) / (max - min);
+  const exp = (value - min) / (max - min);
   return min * Math.pow(max / min, exp);
 };
 
-/*for (var i = 1; i < 20; i += 1) {
-  //I'm starting at 1 because 0 and logarithms dont get along
-  var logindex = toLog(i,1,19); //the index we want to sample
-
-  //As the logindex will probably be decimal, we need to interpolate (in this case linear interpolation)
-  var low = Math.floor(logindex);
-  var high = Math.ceil(logindex);
-  var lv = arr[low];
-  var hv = arr[high];
-  var w = (logindex-low)/(high-low);
-  var v = lv + (hv-lv)*w; //the interpolated value of the original array in the logindex index.
-    document.write(v + "<br/>");  //In your case you should draw the bar here or save it in an array for later.
-}*/
-
-class Spectrograph extends Component {
+class Spectrogram extends Component {
   constructor(props) {
     super(props);
     this.canvas = React.createRef();
@@ -61,4 +47,4 @@ class Spectrograph extends Component {
   }
 }
 
-export default Spectrograph;
+export default Spectrogram;
