@@ -34,7 +34,7 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
       return counter > 0
         ? recursiveFM(
             el.cycle(
-              el.mul(t, el.const({ key: `amp-${counter}`, value: amp }))
+              el.mul(t, el.sm(el.const({ key: `amp-${counter}`, value: amp })))
             ),
             amp / modAmpDiv,
             counter - 1
@@ -49,10 +49,10 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
       el.cycle(
         el.add(
           el.mul(
-            el.cycle(el.const({ key: `start-freq`, value: startFreq })),
-            el.const({ key: `start-amp`, value: modAmp })
+            el.cycle(el.sm(el.const({ key: `start-freq`, value: startFreq }))),
+            el.sm(el.const({ key: `start-amp`, value: modAmp }))
           ),
-          el.const({ key: `start-amp-offset`, value: startOffset })
+          el.sm(el.const({ key: `start-amp-offset`, value: startOffset }))
         )
       ),
       modAmp,
@@ -62,11 +62,11 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
     core.render(
       el.mul(
         synth,
-        el.const({ key: `main-amp-left`, value: mainVolume / 100 })
+        el.sm(el.const({ key: `main-amp-left`, value: mainVolume / 100 }))
       ),
       el.mul(
         synth,
-        el.const({ key: `main-amp-right`, value: mainVolume / 100 })
+        el.sm(el.const({ key: `main-amp-right`, value: mainVolume / 100 }))
       )
     );
   }, [modAmp, steps, startOffset, startFreq, recursiveFM, mainVolume, core]);
