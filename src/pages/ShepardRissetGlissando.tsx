@@ -27,8 +27,10 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
     return el.sub(t, el.floor(t));
   }
 
-  function phasedCycle(speed: number, phaseOffset: number) {
-    return el.sin(el.mul(2 * Math.PI, phasedPhasor(speed, phaseOffset)));
+   function phasedCycle(speed: number, phaseOffset: number) {
+    let p = phasedPhasor(speed, phaseOffset);
+    let offset = el.sub(el.mul(2 * Math.PI, p), el.const({ value: 1.5 }));
+    return el.mul(el.add(el.sin(offset), 1), 0.5);
   }
 
   const playSynth = useCallback(() => {
