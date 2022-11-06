@@ -4,6 +4,7 @@ import WebRenderer from "@elemaudio/web-renderer";
 import About from "./pages/About";
 import RecursiveFM from "./pages/RecursiveFM";
 import Spirals from "./pages/Spirals";
+import ShepardRissetGlissando from "./pages/ShepardRissetGlissando";
 
 type AppProps = {
   audioContext: AudioContext;
@@ -25,6 +26,9 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
             <Link to="/spirals">Pythagorean Spirals</Link>
           </li>
           <li>
+            <Link to="/shepard-risset">Shepard-Risset Glissando</Link>
+          </li>
+          <li>
             <Link to="/about">About</Link>
           </li>
         </ul>
@@ -38,6 +42,10 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
         <Route
           path="/spirals"
           element={<Spirals audioContext={audioContext} core={core} />}
+        />
+        <Route
+          path="/shepard-risset"
+          element={<ShepardRissetGlissando audioContext={audioContext} core={core} />}
         />
         <Route path="/about" element={<About />} />
       </Routes>
