@@ -22,7 +22,8 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
   const [directionUp, setDirectionUp] = useState<boolean>(true);
 
   function phasedPhasor(speed: number, phaseOffset: number) {
-    let t = el.add(el.phasor(speed, 0), phaseOffset);
+    const smoothSpeed = el.sm(el.const({ key: `phased-phasor-speed`, value: speed }));
+    let t = el.add(el.phasor(smoothSpeed, 0), phaseOffset);
     return el.sub(t, el.floor(t));
   }
 
@@ -30,48 +31,29 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
     return el.sin(el.mul(2 * Math.PI, phasedPhasor(speed, phaseOffset)));
   }
 
-  function rampingSine(
-    speed: number,
-    phaseOffset: number,
-    directionUp: boolean,
-    startFreq: number,
-    intervalRatio: number,
-    numVoices: number
-  ) {
-    const modulatorUp = phasedPhasor(speed, phaseOffset);
-    const modulatorDown = el.sub(1.0, modulatorUp);
-    const modulator = directionUp ? modulatorUp : modulatorDown;
-    let freqRange = startFreq * intervalRatio * numVoices;
-    return el.mul(
-      el.cycle(el.add(el.mul(el.pow(modulator, 2), freqRange), startFreq)),
-      phasedCycle(speed / 2, phaseOffset / 2)
-    );
-  }
-
   const playSynth = useCallback(() => {
+    const freqRange = el.sm(el.const({ key: `freq-range`, value: startFreq * intervalRatio * numVoices }));
+    const smoothStartFreq = el.sm(el.const({ key: `start-freq`, value: startFreq }));
+    function rampingSine(phaseOffset: number) {
+      const modulatorUp = phasedPhasor(speed, phaseOffset);
+      const modulatorDown = el.sub(1.0, modulatorUp);
+      const modulator = directionUp ? modulatorUp : modulatorDown;
+
+      return el.mul(
+        el.cycle(el.add(el.mul(el.pow(modulator, 2), freqRange), smoothStartFreq)),
+        phasedCycle(speed / 2, phaseOffset / 2)
+      );
+    }
+
     const allVoices = [...Array(numVoices)].map((_, i) => {
         let phaseOffset = (1 / numVoices) * i;
-        const voice = rampingSine(
-          speed,
-          phaseOffset,
-          directionUp,
-          startFreq,
-          intervalRatio,
-          numVoices
-        );
+        const voice = rampingSine(phaseOffset);
         return el.mul(voice, 1 / numVoices);
       });
 
       const synth = el.mul(el.add(...allVoices), el.sm(el.const({ key: `main-amp`, value: mainVolume / 100 })));
       core.render(synth, synth);
-  }, [
-    mainVolume,
-    speed,
-    startFreq,
-    intervalRatio,
-    numVoices,
-    directionUp,
-  ]);
+  }, [numVoices, mainVolume, core, speed, directionUp, startFreq, intervalRatio]);
 
   const togglePlay = () => {
     if (playing) {
@@ -179,11 +161,6 @@ const SliderLabel = styled.span`
   display: inline-block;
   width: 150px;
   text-align: left;
-`;
-
-const Oscilloscope = styled.div`
-  width: 512px;
-  height: 100px;
 `;
 
 export default ShepardRissetGlissando;
