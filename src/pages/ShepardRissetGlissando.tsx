@@ -5,6 +5,7 @@ import Slider from "../components/Slider";
 import Page from "../components/Page";
 import WebRenderer from "@elemaudio/web-renderer";
 require("events").EventEmitter.defaultMaxListeners = 0;
+
 type ShepardRissetGlissandoProps = {
   audioContext: AudioContext;
   core: WebRenderer;
@@ -21,7 +22,8 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
   const [intervalRatio, setIntervalRatio] = useState<number>(2);
   const [directionUp, setDirectionUp] = useState<boolean>(true);
 
-  function phasedPhasor(speed: number, phaseOffset: number) {
+  const playSynth = useCallback(() => {
+    function phasedPhasor(speed: number, phaseOffset: number) {
     const smoothSpeed = el.sm(el.const({ key: `phased-phasor-speed`, value: speed }));
     let t = el.add(el.phasor(smoothSpeed, 0), phaseOffset);
     return el.sub(t, el.floor(t));
@@ -32,18 +34,15 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
     let offset = el.sub(el.mul(2 * Math.PI, p), el.const({ value: 1.5 }));
     return el.mul(el.add(el.sin(offset), 1), 0.5);
   }
-
-  const playSynth = useCallback(() => {
     const freqRange = el.sm(el.const({ key: `freq-range`, value: startFreq * intervalRatio * numVoices }));
-    const smoothStartFreq = el.sm(el.const({ key: `start-freq`, value: startFreq }));
+      const smoothStartFreq = el.sm(el.const({ key: `start-freq`, value: startFreq }));
     function rampingSine(phaseOffset: number) {
       const modulatorUp = phasedPhasor(speed, phaseOffset);
       const modulatorDown = el.sub(1.0, modulatorUp);
       const modulator = directionUp ? modulatorUp : modulatorDown;
-
       return el.mul(
         el.cycle(el.add(el.mul(el.pow(modulator, 2), freqRange), smoothStartFreq)),
-        phasedCycle(speed / 2, phaseOffset / 2)
+        phasedCycle(speed, phaseOffset)
       );
     }
 
@@ -57,11 +56,11 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
       core.render(synth, synth);
   }, [numVoices, mainVolume, core, speed, directionUp, startFreq, intervalRatio]);
 
-  const togglePlay = () => {
+  const togglePlay = async() => {
     if (playing) {
-      audioContext.suspend();
+      await audioContext.suspend();
     } else {
-      audioContext.resume();
+      await audioContext.resume();
     }
     setPlaying((play) => !play);
   };
