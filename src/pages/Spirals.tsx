@@ -88,10 +88,7 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
     let metro = el.metro({ key: `metro`, interval: scaledSpeedInMs });
     let env = el.adsr(0.1, 0.4, 0, 0.2, metro);
     core.render(el.mul(0, metro));
-    const synth = el.mul(
-      el.cycle(el.sm(el.const({ key: `main-freq`, value: frequency }))),
-      env
-    );
+    const synth = el.mul(el.cycle(frequency), env);
     core.render(
       el.mul(
         synth,

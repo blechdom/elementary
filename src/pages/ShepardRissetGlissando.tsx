@@ -22,6 +22,14 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
   const [intervalRatio, setIntervalRatio] = useState<number>(2);
   const [directionUp, setDirectionUp] = useState<boolean>(true);
 
+  const [presets, setPresets] = useState([
+    [8, 0.05, 100, 2, true],
+    [8, 0.05, 200, 1.5, false],
+    [2, 5.0, 135, 3.7, true],
+    [8, 0.06, 660, 0.12, false],
+    [6, 0.75, 212, 4, true]
+  ]);
+
   const playSynth = useCallback(() => {
     function phasedPhasor(speed: number, phaseOffset: number) {
     const smoothSpeed = el.sm(el.const({ key: `phased-phasor-speed`, value: speed }));
@@ -71,12 +79,39 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
     }
   }, [playing, playSynth]);
 
+  function loadPreset(i: number): void {
+    setNumVoices(presets[i][0] as number);
+    setSpeed(presets[i][1] as number);
+    setStartFreq(presets[i][2] as number);
+    setIntervalRatio(presets[i][3] as number);
+    setDirectionUp(presets[i][4] as boolean);
+  }
+
+  function addNewPreset() {
+    setPresets((presets) => [
+      ...presets,
+      [numVoices, speed, startFreq, intervalRatio, directionUp],
+    ]);
+  }
+
   return (
     <Page>
       <h1>Shepard-Risset Glissando</h1>
       <PlayButton onClick={togglePlay}>
         <h2> {playing ? " Pause " : " Play "} </h2>
       </PlayButton>
+      <Presets>
+        {presets.map((preset, i) => (
+          <Button key={`preset-${i}`} onClick={() => loadPreset(i)}>
+            Preset {i + 1}
+          </Button>
+        ))}
+      </Presets>
+      <div>
+        <Button key={`plus`} onClick={addNewPreset}>
+          + Add Preset
+        </Button>
+      </div>
       <h2>
         main volume = <SliderLabel>{mainVolume}</SliderLabel>
       </h2>
@@ -145,6 +180,17 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
     </Page>
   );
 };
+const Button = styled.button`
+  background-color: #0f9ff5;
+  color: #ffffff;
+  border: none;
+  margin: 0.5em 0.5em 0.5em 0;
+  padding: 0.5em;
+  :hover {
+    background-color: #ffab00;
+    color: #000000;
+  }
+`;
 
 const PlayButton = styled.button`
   background-color: #09ab45;
@@ -162,6 +208,10 @@ const SliderLabel = styled.span`
   display: inline-block;
   width: 150px;
   text-align: left;
+`;
+
+const Presets = styled.div`
+  margin-right: 25px;
 `;
 
 export default ShepardRissetGlissando;
