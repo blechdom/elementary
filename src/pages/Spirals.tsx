@@ -1,9 +1,10 @@
 import WebRenderer from "@elemaudio/web-renderer";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { el } from "@elemaudio/core";
 import styled from "styled-components";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
+import { Modal } from "../components/Modal";
 require("events").EventEmitter.defaultMaxListeners = 0;
 
 function exponentialScale(value: number): number {
@@ -31,6 +32,7 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   const [scaledLowerLimit, setScaledLowerLimit] = useState<number>(0);
   const [intervalDivisor, setIntervalDivisor] = useState<number>(0.25);
   const [scaledIntervalDivisor, setScaledIntervalDivisor] = useState<number>(0);
+   const [showEditPresets, setShowEditPresets] = useState<boolean>(false);
 
   const [presets, setPresets] = useState([
     [16.49, 10, 20, 20, 1.76],
@@ -59,6 +61,17 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
     const updatedPresets = [...presets, [startingFrequency, speedInMs, upperLimit, lowerLimit, intervalDivisor]];
     saveLocalStoragePresets(JSON.stringify(updatedPresets));
     setPresets(updatedPresets);
+  }
+
+   function editPresets() {
+    setShowEditPresets(true);
+  }
+
+   function deletePreset(index: number): void {
+    const updatedPresets = presets.filter((preset, i) => i !== index);
+    saveLocalStoragePresets(JSON.stringify(updatedPresets));
+    setPresets(updatedPresets);
+    setShowEditPresets(false)
   }
 
   function saveLocalStoragePresets(presetList: string) {
@@ -155,6 +168,9 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
         <Button key={`plus`} onClick={addNewPreset}>
           + Add Preset
         </Button>
+         <Button key={`edit`} onClick={editPresets}>
+          Edit Presets
+        </Button>
       </div>
       <h3>Frequency: {frequency.toFixed(3)}</h3>
       <h2>
@@ -229,6 +245,22 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
         max={17}
         onChange={(event) => setIntervalDivisor(parseFloat(event.target.value))}
       />
+            <Modal
+        active={showEditPresets}
+        hideModal={() => setShowEditPresets(false)}
+        title="Edit Presets"
+        footer={
+            <Button onClick={() => setShowEditPresets(false)}>Cancel</Button>
+        }
+      >
+         <Presets>
+        {presets.map((preset, i) => (
+          <Button key={`preset-${i}`} onClick={() => deletePreset(i)}>
+            Delete Preset {i + 1}
+          </Button>
+        ))}
+      </Presets>
+      </Modal>
     </Page>
   );
 };

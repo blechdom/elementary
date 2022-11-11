@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { el } from "@elemaudio/core";
 import styled from "styled-components";
+import { Modal } from "../components/Modal";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 import WebRenderer from "@elemaudio/web-renderer";
@@ -21,6 +22,7 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
   const [startFreq, setStartFreq] = useState<number>(100);
   const [intervalRatio, setIntervalRatio] = useState<number>(2);
   const [directionUp, setDirectionUp] = useState<boolean>(true);
+  const [showEditPresets, setShowEditPresets] = useState<boolean>(false);
 
   const [presets, setPresets] = useState([
     [8, 0.05, 100, 2, true],
@@ -52,6 +54,17 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
   function saveLocalStoragePresets(presetList: string) {
      console.log("saving presets", presetList.length);
       localStorage.setItem('shepard-risset-glissando', presetList);
+  }
+
+  function editPresets() {
+    setShowEditPresets(true);
+  }
+
+   function deletePreset(index: number): void {
+    const updatedPresets = presets.filter((preset, i) => i !== index);
+    saveLocalStoragePresets(JSON.stringify(updatedPresets));
+    setPresets(updatedPresets);
+    setShowEditPresets(false)
   }
 
   const playSynth = useCallback(() => {
@@ -120,6 +133,9 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
         <Button key={`plus`} onClick={addNewPreset}>
           + Add Preset
         </Button>
+        <Button key={`edit`} onClick={editPresets}>
+          Edit Presets
+        </Button>
       </div>
       <h2>
         main volume = <SliderLabel>{mainVolume}</SliderLabel>
@@ -186,6 +202,22 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
         max={4.0}
         onChange={(event) => setIntervalRatio(parseFloat(event.target.value))}
       />
+      <Modal
+        active={showEditPresets}
+        hideModal={() => setShowEditPresets(false)}
+        title="Edit Presets"
+        footer={
+            <Button onClick={() => setShowEditPresets(false)}>Cancel</Button>
+        }
+      >
+         <Presets>
+        {presets.map((preset, i) => (
+          <Button key={`preset-${i}`} onClick={() => deletePreset(i)}>
+            Delete Preset {i + 1}
+          </Button>
+        ))}
+      </Presets>
+      </Modal>
     </Page>
   );
 };

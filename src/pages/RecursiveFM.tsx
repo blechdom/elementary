@@ -1,8 +1,9 @@
 import WebRenderer from "@elemaudio/web-renderer";
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { el } from "@elemaudio/core";
 import type { NodeRepr_t } from "@elemaudio/core";
 import styled from "styled-components";
+import { Modal } from "../components/Modal";
 import Slider from "../components/Slider";
 import Page from "../components/Page";
 require("events").EventEmitter.defaultMaxListeners = 0;
@@ -20,6 +21,7 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
   const [startOffset, setStartOffset] = useState<number>(6335);
   const [modAmpDiv, setModAmpDiv] = useState<number>(2.48);
   const [mainVolume, setMainVolume] = useState<number>(0);
+  const [showEditPresets, setShowEditPresets] = useState<boolean>(false);
 
   const [presets, setPresets] = useState([
     [3, 7307, 3.32, 3.68, 0],
@@ -46,6 +48,17 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
     const updatedPresets = [...presets, [steps, modAmp, startFreq, modAmpDiv]];
     saveLocalStoragePresets(JSON.stringify(updatedPresets));
     setPresets(updatedPresets);
+  }
+
+    function editPresets() {
+    setShowEditPresets(true);
+  }
+
+   function deletePreset(index: number): void {
+    const updatedPresets = presets.filter((preset, i) => i !== index);
+    saveLocalStoragePresets(JSON.stringify(updatedPresets));
+    setPresets(updatedPresets);
+    setShowEditPresets(false)
   }
 
   function saveLocalStoragePresets(presetList: string) {
@@ -126,6 +139,9 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
         <Button key={`plus`} onClick={addNewPreset}>
           + Add Preset
         </Button>
+        <Button key={`edit`} onClick={editPresets}>
+          Edit Presets
+        </Button>
       </div>
       <h2>
         main volume = <SliderLabel>{mainVolume}</SliderLabel>
@@ -192,6 +208,22 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
         max={8}
         onChange={(event) => setModAmpDiv(parseFloat(event.target.value))}
       />
+      <Modal
+        active={showEditPresets}
+        hideModal={() => setShowEditPresets(false)}
+        title="Edit Presets"
+        footer={
+            <Button onClick={() => setShowEditPresets(false)}>Cancel</Button>
+        }
+      >
+         <Presets>
+        {presets.map((preset, i) => (
+          <Button key={`preset-${i}`} onClick={() => deletePreset(i)}>
+            Delete Preset {i + 1}
+          </Button>
+        ))}
+      </Presets>
+      </Modal>
     </Page>
   );
 };
