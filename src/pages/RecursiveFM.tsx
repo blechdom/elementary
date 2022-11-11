@@ -29,6 +29,30 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
     [3, 2340, 7, 0.75, 2000],
   ]);
 
+  useEffect(() => {
+      const storedPresets = localStorage.getItem('recursive-fm');
+      storedPresets && setPresets(JSON.parse(storedPresets));
+  }, []);
+
+  function loadPreset(i: number) {
+    setSteps(presets[i][0]);
+    setModAmp(presets[i][1]);
+    setStartFreq(presets[i][2]);
+    setModAmpDiv(presets[i][3]);
+    setStartOffset(presets[i][4]);
+  }
+
+  function addNewPreset() {
+    const updatedPresets = [...presets, [steps, modAmp, startFreq, modAmpDiv]];
+    saveLocalStoragePresets(JSON.stringify(updatedPresets));
+    setPresets(updatedPresets);
+  }
+
+  function saveLocalStoragePresets(presetList: string) {
+     console.log("saving presets", presetList.length);
+     localStorage.setItem('recursive-fm', presetList);
+  }
+
   const recursiveFM = useCallback(
     (t: NodeRepr_t, amp: number, counter: number): NodeRepr_t => {
       return counter > 0
@@ -84,21 +108,6 @@ const RecursiveFM: React.FC<RecursiveFMProps> = ({ audioContext, core }) => {
   useEffect(() => {
     playSynth();
   }, [playSynth]);
-
-  function loadPreset(i: number) {
-    setSteps(presets[i][0]);
-    setModAmp(presets[i][1]);
-    setStartFreq(presets[i][2]);
-    setModAmpDiv(presets[i][3]);
-    setStartOffset(presets[i][4]);
-  }
-
-  function addNewPreset() {
-    setPresets((presets) => [
-      ...presets,
-      [steps, modAmp, startFreq, modAmpDiv],
-    ]);
-  }
 
   return (
     <Page>

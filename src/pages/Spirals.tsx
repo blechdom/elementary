@@ -42,6 +42,29 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
     [7.76, 10.95, 12.21, 4.09, 6.96],
   ]);
 
+   useEffect(() => {
+      const storedPresets = localStorage.getItem('spirals');
+      storedPresets && setPresets(JSON.parse(storedPresets));
+  }, []);
+
+   function loadPreset(i: number): void {
+    setStartingFrequency(presets[i][0]);
+    setSpeedInMs(presets[i][1]);
+    setUpperLimit(presets[i][2]);
+    setLowerLimit(presets[i][3]);
+    setIntervalDivisor(presets[i][4]);
+  }
+
+  function addNewPreset() {
+    const updatedPresets = [...presets, [startingFrequency, speedInMs, upperLimit, lowerLimit, intervalDivisor]];
+    saveLocalStoragePresets(JSON.stringify(updatedPresets));
+    setPresets(updatedPresets);
+  }
+
+  function saveLocalStoragePresets(presetList: string) {
+     localStorage.setItem('spirals', presetList);
+  }
+
   useEffect(() => {
     const scaledFreq = exponentialScale(startingFrequency);
     setScaledStartingFrequency(scaledFreq);
@@ -114,21 +137,6 @@ const Spirals: React.FC<SpiralsProps> = ({ audioContext, core }) => {
   useEffect(() => {
     playSynth();
   }, [playSynth]);
-
-  function loadPreset(i: number): void {
-    setStartingFrequency(presets[i][0]);
-    setSpeedInMs(presets[i][1]);
-    setUpperLimit(presets[i][2]);
-    setLowerLimit(presets[i][3]);
-    setIntervalDivisor(presets[i][4]);
-  }
-
-  function addNewPreset() {
-    setPresets((presets) => [
-      ...presets,
-      [startingFrequency, speedInMs, upperLimit, lowerLimit, intervalDivisor],
-    ]);
-  }
 
   return (
     <Page>

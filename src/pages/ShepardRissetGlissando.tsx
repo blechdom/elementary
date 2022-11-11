@@ -30,6 +30,30 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
     [6, 0.75, 212, 4, true]
   ]);
 
+  useEffect(() => {
+      const storedPresets = localStorage.getItem('shepard-risset-glissando');
+      storedPresets && setPresets(JSON.parse(storedPresets));
+  }, []);
+
+  function loadPreset(i: number): void {
+    setNumVoices(presets[i][0] as number);
+    setSpeed(presets[i][1] as number);
+    setStartFreq(presets[i][2] as number);
+    setIntervalRatio(presets[i][3] as number);
+    setDirectionUp(presets[i][4] as boolean);
+  }
+
+  function addNewPreset() {
+    const updatedPresets = [...presets, [numVoices, speed, startFreq, intervalRatio, directionUp]];
+    saveLocalStoragePresets(JSON.stringify(updatedPresets));
+    setPresets(updatedPresets);
+  }
+
+  function saveLocalStoragePresets(presetList: string) {
+     console.log("saving presets", presetList.length);
+      localStorage.setItem('shepard-risset-glissando', presetList);
+  }
+
   const playSynth = useCallback(() => {
     function phasedPhasor(speed: number, phaseOffset: number) {
     const smoothSpeed = el.sm(el.const({ key: `phased-phasor-speed`, value: speed }));
@@ -78,21 +102,6 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
       playSynth();
     }
   }, [playing, playSynth]);
-
-  function loadPreset(i: number): void {
-    setNumVoices(presets[i][0] as number);
-    setSpeed(presets[i][1] as number);
-    setStartFreq(presets[i][2] as number);
-    setIntervalRatio(presets[i][3] as number);
-    setDirectionUp(presets[i][4] as boolean);
-  }
-
-  function addNewPreset() {
-    setPresets((presets) => [
-      ...presets,
-      [numVoices, speed, startFreq, intervalRatio, directionUp],
-    ]);
-  }
 
   return (
     <Page>
