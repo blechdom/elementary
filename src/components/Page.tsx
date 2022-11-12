@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 const Page = styled.div`
-  width: 100%;
+  width: 96%;
   align: center;
   margin: 4em;
 `;

@@ -33,7 +33,7 @@ const App: React.FC<AppProps> = ({ audioContext, core }) => {
           </li>
         </ul>
       </Nav>
-      <br />
+    <br/><br/>
       <Routes>
         <Route
           path="/"
