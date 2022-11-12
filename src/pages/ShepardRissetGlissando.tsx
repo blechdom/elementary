@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { el } from "@elemaudio/core";
+import {el, NodeRepr_t} from "@elemaudio/core";
 import styled from "styled-components";
 import { Modal } from "../components/Modal";
 import Slider from "../components/Slider";
@@ -52,7 +52,6 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
   }
 
   function saveLocalStoragePresets(presetList: string) {
-     console.log("saving presets", presetList.length);
       localStorage.setItem('shepard-risset-glissando', presetList);
   }
 
@@ -80,7 +79,7 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
     return el.mul(el.add(el.sin(offset), 1), 0.5);
   }
     const freqRange = el.sm(el.const({ key: `freq-range`, value: startFreq * intervalRatio * numVoices }));
-      const smoothStartFreq = el.sm(el.const({ key: `start-freq`, value: startFreq }));
+    const smoothStartFreq = el.sm(el.const({ key: `start-freq`, value: startFreq }));
     function rampingSine(phaseOffset: number) {
       const modulatorUp = phasedPhasor(speed, phaseOffset);
       const modulatorDown = el.sub(1.0, modulatorUp);
@@ -94,11 +93,17 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
     const allVoices = [...Array(numVoices)].map((_, i) => {
         let phaseOffset = (1 / numVoices) * i;
         const voice = rampingSine(phaseOffset);
-        return el.mul(voice, 1 / numVoices);
+        return el.mul(voice, el.sm(el.const({ key: `scale-amp-by-numVoices`, value: (1 / numVoices)})));
       });
 
-      const synth = el.mul(el.add(...allVoices), el.sm(el.const({ key: `main-amp`, value: mainVolume / 100 })));
-      core.render(synth, synth);
+    function addMany(ins: NodeRepr_t[]): NodeRepr_t{
+      if (ins.length < 9) {
+        return el.add(...ins) as NodeRepr_t;
+      }
+      return el.add(...ins.slice(0, 7), addMany(ins.slice(8))) as NodeRepr_t
+    }
+    const synth = el.mul(addMany(allVoices as NodeRepr_t[]), el.sm(el.const({ key: `main-amp`, value: mainVolume / 100 })));
+    core.render(synth, synth);
   }, [numVoices, mainVolume, core, speed, directionUp, startFreq, intervalRatio]);
 
   const togglePlay = async() => {
@@ -164,7 +169,7 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
         value={numVoices}
         min={1}
         step={1}
-        max={8}
+        max={28}
         onChange={(event) => setNumVoices(parseFloat(event.target.value))}
       />
       <h2>
