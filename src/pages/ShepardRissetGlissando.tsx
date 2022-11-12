@@ -68,10 +68,10 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
 
   const playSynth = useCallback(() => {
     function phasedPhasor(speed: number, phaseOffset: number) {
-    const smoothSpeed = el.sm(el.const({ key: `phased-phasor-speed`, value: speed }));
-    let t = el.add(el.phasor(smoothSpeed, 0), phaseOffset);
-    return el.sub(t, el.floor(t));
-  }
+      const smoothSpeed = el.sm(el.const({ key: `phased-phasor-speed`, value: speed }));
+      let t = el.add(el.phasor(smoothSpeed, 0), el.const({ value: phaseOffset}));
+      return el.sub(t, el.floor(t));
+    }
 
    function phasedCycle(speed: number, phaseOffset: number) {
     let p = phasedPhasor(speed, phaseOffset);
@@ -80,6 +80,7 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
   }
     const freqRange = el.sm(el.const({ key: `freq-range`, value: startFreq * intervalRatio * numVoices }));
     const smoothStartFreq = el.sm(el.const({ key: `start-freq`, value: startFreq }));
+
     function rampingSine(phaseOffset: number) {
       const modulatorUp = phasedPhasor(speed, phaseOffset);
       const modulatorDown = el.sub(1.0, modulatorUp);
@@ -169,7 +170,7 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
         value={numVoices}
         min={1}
         step={1}
-        max={28}
+        max={24}
         onChange={(event) => setNumVoices(parseFloat(event.target.value))}
       />
       <h2>
@@ -190,9 +191,9 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
       <Slider
         type={"range"}
         value={startFreq}
-        min={20}
+        min={10}
         step={0.01}
-        max={2000}
+        max={3000}
         onChange={(event) => setStartFreq(parseFloat(event.target.value))}
       />
       <h2>
