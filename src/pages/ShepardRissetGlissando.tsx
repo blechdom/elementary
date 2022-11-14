@@ -68,16 +68,16 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
 
   const playSynth = useCallback(() => {
     function phasedPhasor(key: string, speed: number, phaseOffset: number) {
-      const smoothSpeed = el.sm(el.const({ key: `${key}:phased-phasor-speed`, value: speed }));
+      const smoothSpeed = el.sm(el.const({ key: `phased-phasor-speed`, value: speed }));
       let t = el.add(el.phasor(smoothSpeed, 0), el.sm(el.const({ key: `${key}:phased-phasor-offset`, value: phaseOffset})));
       return el.sub(t, el.floor(t));
     }
 
-     function phasedCycle(key: string, speed: number, phaseOffset: number) {
-      let p = phasedPhasor(key, speed, phaseOffset);
-      let offset = el.sub(el.mul(2 * Math.PI, p), 1.5);
-      return el.mul(el.add(el.sin(offset), 1), 0.5);
-    }
+   function phasedCycle(key: string, speed: number, phaseOffset: number) {
+    let p = phasedPhasor(key, speed, phaseOffset);
+    let offset = el.sub(el.mul(2 * Math.PI, p), el.const({ key: `phased-cycle-offset`, value: 1.5 }));
+    return el.mul(el.add(el.sin(offset), 1), 0.5);
+  }
     const freqRange = el.sm(el.const({ key: `freq-range`, value: startFreq * intervalRatio * numVoices }));
     const smoothStartFreq = el.sm(el.const({ key: `start-freq`, value: startFreq }));
 
