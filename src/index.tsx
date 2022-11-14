@@ -17,7 +17,7 @@ const root = createRoot(document.getElementById("root") as HTMLElement);
 
 core.on("load", () => {
   core.on("error", (e: unknown) => {
-    console.error("conre error: ", e);
+    console.error("elementary web renderer core error: ", JSON.stringify(e));
   });
 
   root.render(

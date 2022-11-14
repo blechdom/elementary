@@ -67,35 +67,36 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
   }
 
   const playSynth = useCallback(() => {
-    function phasedPhasor(speed: number, phaseOffset: number) {
-      const smoothSpeed = el.sm(el.const({ key: `phased-phasor-speed`, value: speed }));
-      let t = el.add(el.phasor(smoothSpeed, 0), el.const({ value: phaseOffset}));
+    function phasedPhasor(key: string, speed: number, phaseOffset: number) {
+      const smoothSpeed = el.sm(el.const({ key: `${key}:phased-phasor-speed`, value: speed }));
+      let t = el.add(el.phasor(smoothSpeed, 0), el.sm(el.const({ key: `${key}:phased-phasor-offset`, value: phaseOffset})));
       return el.sub(t, el.floor(t));
     }
 
-   function phasedCycle(speed: number, phaseOffset: number) {
-    let p = phasedPhasor(speed, phaseOffset);
-    let offset = el.sub(el.mul(2 * Math.PI, p), el.const({ value: 1.5 }));
-    return el.mul(el.add(el.sin(offset), 1), 0.5);
-  }
+     function phasedCycle(key: string, speed: number, phaseOffset: number) {
+      let p = phasedPhasor(key, speed, phaseOffset);
+      let offset = el.sub(el.mul(2 * Math.PI, p), 1.5);
+      return el.mul(el.add(el.sin(offset), 1), 0.5);
+    }
     const freqRange = el.sm(el.const({ key: `freq-range`, value: startFreq * intervalRatio * numVoices }));
     const smoothStartFreq = el.sm(el.const({ key: `start-freq`, value: startFreq }));
 
-    function rampingSine(phaseOffset: number) {
-      const modulatorUp = phasedPhasor(speed, phaseOffset);
+    function rampingSine(key: string, phaseOffset: number) {
+      const modulatorUp = phasedPhasor(key, speed, phaseOffset);
       const modulatorDown = el.sub(1.0, modulatorUp);
       const modulator = directionUp ? modulatorUp : modulatorDown;
       return el.mul(
         el.cycle(el.add(el.mul(el.pow(modulator, 2), freqRange), smoothStartFreq)),
-        phasedCycle(speed, phaseOffset)
+        phasedCycle(key, speed, phaseOffset)
       );
     }
 
     const allVoices = [...Array(numVoices)].map((_, i) => {
-        let phaseOffset = (1 / numVoices) * i;
-        const voice = rampingSine(phaseOffset);
-        return el.mul(voice, el.sm(el.const({ key: `scale-amp-by-numVoices`, value: (1 / numVoices)})));
-      });
+      const key = `voice-${i}`;
+      const phaseOffset = (1 / numVoices) * i;
+      const voice = rampingSine(key, phaseOffset);
+      return el.mul(voice, el.sm(el.const({ key: `scale-amp-by-numVoices`, value: (1 / numVoices)})));
+    });
 
     function addMany(ins: NodeRepr_t[]): NodeRepr_t{
       if (ins.length < 9) {
@@ -170,7 +171,7 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
         value={numVoices}
         min={1}
         step={1}
-        max={24}
+        max={64}
         onChange={(event) => setNumVoices(parseFloat(event.target.value))}
       />
       <h2>
@@ -203,7 +204,7 @@ const ShepardRissetGlissando: React.FC<ShepardRissetGlissandoProps> = ({
       <Slider
         type={"range"}
         value={intervalRatio}
-        min={0}
+        min={0.01}
         step={0.01}
         max={4.0}
         onChange={(event) => setIntervalRatio(parseFloat(event.target.value))}
